@@ -19,7 +19,6 @@
     <div class="nav-links">
       <a href="#qubit">Qubit</a>
       <a href="#hilbert">Hilbert</a>
-      <a href="#interferencia">Interferência</a>
       <a href="#periodo">Período</a>
       <a href="#algoritmo">Algoritmo</a>
       <a href="#hardware">Hardware real</a>
@@ -116,41 +115,9 @@
   </div>
 </section>
 
-<!-- ======================================================== 3. interferência -->
-<section id="interferencia" class="chapter">
-  <h2><span class="chap-n">3</span> Interferência: setas que se somam ou se engolem</h2>
-  <div class="cols">
-    <div>
-      <p>
-        Quando vários caminhos levam ao mesmo resultado, as setas deles se
-        somam <b>cabeça em cauda</b>. Se chegam apontando para o mesmo lado, a
-        resultante é enorme — <b>interferência construtiva</b>. Se cada uma
-        chega girada um pouquinho a mais que a anterior, o caminho se fecha num
-        círculo e a resultante morre — <b>destrutiva</b>.
-      </p>
-      <p>
-        Arraste o passo de fase e veja as 24 setas alinharem ou se engolirem.
-        É exatamente esta figura que decide, lá na frente, quais valores o
-        computador quântico deixa sobreviver na medição.
-      </p>
-      <div class="controls">
-        <label class="mono" for="int-slider">passo de fase</label>
-        <input id="int-slider" class="slider grow" type="range" min="0" max="200" value="0" aria-label="passo de fase entre setas">
-        <button id="int-c" class="btn small">construtiva</button>
-        <button id="int-d" class="btn small ghost">destrutiva</button>
-      </div>
-    </div>
-    <figure class="panel">
-      <p id="int-verdict" class="int-verdict mono"></p>
-      <canvas id="int-canvas" class="viz tall" height="280"></canvas>
-      <figcaption>As 24 setinhas se somam ponta a ponta; a seta rosa, ao lado do caminho, é o total.</figcaption>
-    </figure>
-  </div>
-</section>
-
-<!-- ======================================================== 4. período -->
+<!-- ======================================================== 3. período -->
 <section id="periodo" class="chapter">
-  <h2><span class="chap-n">4</span> Fatorar vira achar um período</h2>
+  <h2><span class="chap-n">3</span> Fatorar vira achar um período</h2>
   <div class="cols">
     <div>
       <p>
@@ -185,11 +152,13 @@
 
 <!-- ======================================================== 5. algoritmo -->
 <section id="algoritmo" class="chapter wide">
-  <h2><span class="chap-n">5</span> O algoritmo de Shor, ao vivo</h2>
+  <h2><span class="chap-n">4</span> O algoritmo de Shor, ao vivo</h2>
   <p class="chapter-lead">
-    Simulação <b>exata</b> — seu navegador calcula todas as amplitudes do
-    estado, as mesmas que um simulador porta a porta produziria. Escolha o
-    número e acompanhe as quatro etapas.
+    Escolha um número e aperte <b>rodar</b>. O circuito prepara todos os
+    expoentes ao mesmo tempo, calcula a<sup>x</sup> mod N de uma só vez, e a
+    QFT⁻¹ faz os caminhos errados se <b>cancelarem</b> — sobra o período, e do
+    período saem os fatores. A simulação é <b>exata</b> e mede sozinha quantas
+    vezes precisar.
   </p>
 
   <div class="panel sim-controls">
@@ -198,60 +167,32 @@
     <div id="sim-presets" class="presets"></div>
     <label for="sim-a">base <span class="math">a</span></label>
     <select id="sim-a" class="num"></select>
-    <button id="sim-go" class="btn">preparar</button>
+    <button id="sim-go" class="btn">rodar</button>
     <span id="sim-err" class="err" role="alert"></span>
   </div>
 
   <div id="sim-body" class="hidden">
+    <figure class="circuit-box panel">
+      <div id="sim-circuit"></div>
+      <figcaption>Da esquerda para a direita: <b>H</b> põe a contagem em
+      superposição; a caixa <b>a<sup>x</sup> mod N</b> calcula todos os
+      expoentes de uma vez; a <b>QFT⁻¹</b> faz os caminhos errados se
+      cancelarem; os medidores sorteiam um k já enviesado para o período.</figcaption>
+    </figure>
     <p id="sim-regs" class="fine center"></p>
-    <div id="sim-circuit" class="circuit-box panel"></div>
-
-    <div class="steps" id="sim-steps" role="tablist">
-      <button class="step-btn" data-step="0" role="tab">① Superposição</button>
-      <button class="step-btn" data-step="1" role="tab">② Oráculo a<sup>x</sup> mod N</button>
-      <button class="step-btn" data-step="2" role="tab">③ QFT⁻¹ — interferência</button>
-      <button class="step-btn" data-step="3" role="tab">④ Medição → fatores</button>
-    </div>
 
     <div class="panel step-panel">
-      <div id="sim-text"></div>
-
-      <div id="sim-charts">
-        <div id="sim-legend" class="legend"></div>
-        <canvas id="sim-canvas" class="viz tall" height="260"></canvas>
-        <details class="tbl-details"><summary>ver como tabela</summary><div id="sim-table"></div></details>
-      </div>
-
-      <div id="sim-phasor-box" class="hidden">
-        <div class="controls">
-          <label class="mono" for="sim-k">explorar k =&nbsp;<b id="sim-k-val">0</b></label>
-          <input id="sim-k" class="slider grow" type="range" min="0" max="255" value="0" aria-label="valor de k para inspecionar a interferência">
-        </div>
-        <div class="phasor-row">
-          <canvas id="sim-phasor" class="viz square" height="240"></canvas>
-          <p id="sim-phasor-text" class="fine"></p>
-        </div>
-      </div>
-
-      <div id="sim-measure-box" class="hidden">
-        <div class="controls">
-          <button id="sim-measure" class="btn">Medir o registrador de contagem</button>
-          <button id="sim-again" class="btn small ghost hidden">medir de novo</button>
-        </div>
-        <div id="sim-result"></div>
-      </div>
-
-      <div class="controls step-nav">
-        <button id="sim-prev" class="btn small ghost">← etapa anterior</button>
-        <button id="sim-next" class="btn small">próxima etapa →</button>
-      </div>
+      <div id="sim-legend" class="legend"></div>
+      <canvas id="sim-canvas" class="viz tall" height="260"></canvas>
+      <details class="tbl-details"><summary>ver como tabela</summary><div id="sim-table"></div></details>
+      <div id="sim-result"></div>
     </div>
   </div>
 </section>
 
 <!-- ======================================================== 6. hardware -->
 <section id="hardware" class="chapter wide">
-  <h2><span class="chap-n">6</span> Agora no hardware de verdade</h2>
+  <h2><span class="chap-n">5</span> Agora no hardware de verdade</h2>
   <p class="chapter-lead">
     A simulação acima é o algoritmo em condições ideais. Abaixo, os
     <b>histogramas crus</b> dos mesmos circuitos executados num processador
@@ -287,7 +228,7 @@
 
 <!-- ======================================================== 7. cripto -->
 <section id="cripto" class="chapter">
-  <h2><span class="chap-n">7</span> "Então o RSA já era?" — ainda não. Mas o relógio anda.</h2>
+  <h2><span class="chap-n">6</span> "Então o RSA já era?" — ainda não. Mas o relógio anda.</h2>
   <div class="prose">
     <p>
       Uma chave RSA-2048 tem 617 dígitos. Fatorá-la com Shor exige circuitos
