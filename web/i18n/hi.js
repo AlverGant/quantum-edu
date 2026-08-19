@@ -135,6 +135,6 @@ export default {
   'met.p2': '<b>हार्डवेयर सर्किट।</b> Qiskit से बनाए और सैद्धांतिक वितरण से जाँचे गए, Heron के मूल गेटों (cz, rz, sx, x) के लिए ऑफ़लाइन ट्रांसपाइल किए गए, और Cloudflare Worker द्वारा IBM Quantum REST API से भेजे गए — Open योजना, महीने में 10 मिनट QPU, क्वांटम ड्रॉ के साथ साझा। सामान्य नियंत्रण प्रयोग S.&nbsp;Beauregard, <i>Circuit for Shor\'s algorithm using 2n+3 qubits</i> (quant-ph/0205095) का अनुसरण करता है; IBM हार्डवेयर पर 15, 21 और 35 के गुणनखंडन का संदर्भ प्रयोग Amico, Saleem &amp; Kumph (arXiv:1903.00768) है; संकलित सर्किटों की चिरसम्मत आलोचना Smolin, Smith &amp; Vargo, <i>Oversimplifying quantum factoring</i> (arXiv:1301.7007) है।',
   'met.p3': 'न कुकी, न ट्रैकर। दिखाया गया हार्डवेयर डेटा कच्ची मापन गिनती है, बिना पोस्ट-सिलेक्शन।',
 
-  'foot': '⚛ क्वांटम गुणनखंडन · Alvaro Antelo का शैक्षिक प्रयोग · <a href="https://sorteio.vynstream.com">क्वांटम ड्रॉ</a> का सहोदर',
+  'foot': '⚛ क्वांटम गुणनखंडन · Alvaro Antelo का शैक्षिक प्रयोग · <a href="https://sorteio.vynstream.com">क्वांटम ड्रॉ</a> का सहोदर · <a href="https://github.com/AlverGant/quantum-edu">GitHub पर कोड</a>',
   'stats.line': '{countries} देशों से {visitors} आगंतुक · {pageviews} पृष्ठ दृश्य',
 };

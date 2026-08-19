@@ -135,6 +135,6 @@ export default {
   'met.p2': '<b>دارات العتاد.</b> بُنيت وتُحقق منها بـQiskit مقابل التوزيع النظري، ونُقلت دون اتصال إلى بوابات Heron الأصلية (cz, rz, sx, x)، وأُرسلت عبر Cloudflare Worker بواسطة IBM Quantum REST API — خطة Open، عشر دقائق QPU شهريًا، مشتركة مع السحب الكمومي. تجربة الضبط العامة تتبع S.&nbsp;Beauregard, <i>Circuit for Shor\'s algorithm using 2n+3 qubits</i> (quant-ph/0205095)؛ والتجربة المرجعية في تحليل 15 و21 و35 على عتاد IBM هي Amico, Saleem &amp; Kumph (arXiv:1903.00768)؛ والنقد الكلاسيكي للدارات المجمَّعة هو Smolin, Smith &amp; Vargo, <i>Oversimplifying quantum factoring</i> (arXiv:1301.7007).',
   'met.p3': 'لا كعكات ولا متتبعات. بيانات العتاد المعروضة عدّات قياس خام، بلا انتقاء لاحق.',
 
-  'foot': '⚛ التحليل الكمومي إلى عوامل · تجربة تعليمية لألفارو أنتيلو · شقيق <a href="https://sorteio.vynstream.com">السحب الكمومي</a>',
+  'foot': '⚛ التحليل الكمومي إلى عوامل · تجربة تعليمية لألفارو أنتيلو · شقيق <a href="https://sorteio.vynstream.com">السحب الكمومي</a> · <a href="https://github.com/AlverGant/quantum-edu">الشيفرة على GitHub</a>',
   'stats.line': '{visitors} زائرًا من {countries} دولة · {pageviews} مشاهدة',
 };

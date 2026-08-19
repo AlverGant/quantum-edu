@@ -135,6 +135,6 @@ export default {
   'met.p2': '<b>Hardware circuits.</b> Built and validated with Qiskit against the theoretical distribution, transpiled offline to the Heron native gates (cz, rz, sx, x) and submitted by a Cloudflare Worker via the IBM Quantum REST API — Open plan, 10 minutes of QPU per month, shared with Quantum Draw. The generic control experiment follows S.&nbsp;Beauregard, <i>Circuit for Shor\'s algorithm using 2n+3 qubits</i> (quant-ph/0205095); the reference experiment on factoring 15, 21 and 35 on IBM hardware is Amico, Saleem &amp; Kumph (arXiv:1903.00768); the classic critique of compiled circuits is Smolin, Smith &amp; Vargo, <i>Oversimplifying quantum factoring</i> (arXiv:1301.7007).',
   'met.p3': 'No cookies, no trackers. The hardware data shown is raw measurement counts, no post-selection.',
 
-  'foot': '⚛ Quantum Factoring · an educational experiment by Alvaro Antelo · sister of <a href="https://sorteio.vynstream.com">Quantum Draw</a>',
+  'foot': '⚛ Quantum Factoring · an educational experiment by Alvaro Antelo · sister of <a href="https://sorteio.vynstream.com">Quantum Draw</a> · <a href="https://github.com/AlverGant/quantum-edu">code on GitHub</a>',
   'stats.line': '{visitors} visitors from {countries} countries · {pageviews} page views',
 };

@@ -135,6 +135,6 @@ export default {
   'met.p2': '<b>Схемы для железа.</b> Построены и проверены в Qiskit против теоретического распределения, транспилированы офлайн под родные гейты Heron (cz, rz, sx, x) и отправлены Cloudflare Worker-ом через REST API IBM Quantum — план Open, 10 минут QPU в месяц, общие с Квантовым Розыгрышем. Универсальный контрольный эксперимент следует S.&nbsp;Beauregard, <i>Circuit for Shor\'s algorithm using 2n+3 qubits</i> (quant-ph/0205095); эталонный эксперимент по факторизации 15, 21 и 35 на железе IBM — Amico, Saleem &amp; Kumph (arXiv:1903.00768); классическая критика скомпилированных схем — Smolin, Smith &amp; Vargo, <i>Oversimplifying quantum factoring</i> (arXiv:1301.7007).',
   'met.p3': 'Ни cookie, ни трекеров. Показанные данные железа — сырые счётчики измерений, без постселекции.',
 
-  'foot': '⚛ Квантовая факторизация · образовательный эксперимент Алваро Антело · брат <a href="https://sorteio.vynstream.com">Квантового Розыгрыша</a>',
+  'foot': '⚛ Квантовая факторизация · образовательный эксперимент Алваро Антело · брат <a href="https://sorteio.vynstream.com">Квантового Розыгрыша</a> · <a href="https://github.com/AlverGant/quantum-edu">код на GitHub</a>',
   'stats.line': '{visitors} посетителей из {countries} стран · {pageviews} просмотров',
 };

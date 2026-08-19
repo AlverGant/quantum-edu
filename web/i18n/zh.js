@@ -135,6 +135,6 @@ export default {
   'met.p2': '<b>硬件电路。</b>用 Qiskit 构建并对照理论分布验证，离线转译到 Heron 的原生门（cz、rz、sx、x），由 Cloudflare Worker 通过 IBM Quantum REST API 提交 — Open 计划，每月 10 分钟 QPU，与量子抽签共享。通用对照实验遵循 S.&nbsp;Beauregard，<i>Circuit for Shor\'s algorithm using 2n+3 qubits</i>（quant-ph/0205095）；在 IBM 硬件上分解 15、21、35 的参考实验是 Amico、Saleem &amp; Kumph（arXiv:1903.00768）；对编译电路的经典批评是 Smolin、Smith &amp; Vargo，<i>Oversimplifying quantum factoring</i>（arXiv:1301.7007）。',
   'met.p3': '没有 Cookie，没有追踪器。展示的硬件数据是原始测量计数，未经后选。',
 
-  'foot': '⚛ 量子因数分解 · Alvaro Antelo 的教育实验 · <a href="https://sorteio.vynstream.com">量子抽签</a>的姊妹站',
+  'foot': '⚛ 量子因数分解 · Alvaro Antelo 的教育实验 · <a href="https://sorteio.vynstream.com">量子抽签</a>的姊妹站 · <a href="https://github.com/AlverGant/quantum-edu">GitHub 源代码</a>',
   'stats.line': '来自 {countries} 个国家和地区的 {visitors} 位访客 · {pageviews} 次浏览',
 };

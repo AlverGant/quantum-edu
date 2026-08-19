@@ -135,6 +135,6 @@ export default {
   'met.p2': '<b>Circuits sur le matériel.</b> Construits et validés avec Qiskit contre la distribution théorique, transpilés hors ligne vers les portes natives du Heron (cz, rz, sx, x) et soumis par un Cloudflare Worker via l\'API REST d\'IBM Quantum — plan Open, 10 minutes de QPU par mois, partagées avec le Tirage Quantique. L\'expérience de contrôle générique suit S.&nbsp;Beauregard, <i>Circuit for Shor\'s algorithm using 2n+3 qubits</i> (quant-ph/0205095) ; l\'expérience de référence sur la factorisation de 15, 21 et 35 sur matériel IBM est Amico, Saleem &amp; Kumph (arXiv:1903.00768) ; la critique classique des circuits compilés est Smolin, Smith &amp; Vargo, <i>Oversimplifying quantum factoring</i> (arXiv:1301.7007).',
   'met.p3': 'Ni cookies ni traqueurs. Les données matérielles affichées sont des comptages bruts de mesure, sans post-sélection.',
 
-  'foot': '⚛ Factorisation Quantique · une expérience éducative d\'Alvaro Antelo · frère du <a href="https://sorteio.vynstream.com">Tirage Quantique</a>',
+  'foot': '⚛ Factorisation Quantique · une expérience éducative d\'Alvaro Antelo · frère du <a href="https://sorteio.vynstream.com">Tirage Quantique</a> · <a href="https://github.com/AlverGant/quantum-edu">code sur GitHub</a>',
   'stats.line': '{visitors} visiteurs de {countries} pays · {pageviews} pages vues',
 };

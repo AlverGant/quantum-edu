@@ -137,6 +137,6 @@ export default {
   'met.p2': '<b>Circuitos no hardware.</b> Construídos e validados com Qiskit contra a distribuição teórica, transpilados offline para as portas nativas do Heron (cz, rz, sx, x) e submetidos por um Cloudflare Worker via API REST da IBM Quantum — plano Open, 10 minutos de QPU por mês, compartilhados com o Sorteio Quântico. O experimento de controle genérico segue S.&nbsp;Beauregard, <i>Circuit for Shor\'s algorithm using 2n+3 qubits</i> (quant-ph/0205095); o experimento de referência sobre fatorar 15, 21 e 35 em hardware IBM é Amico, Saleem &amp; Kumph (arXiv:1903.00768); a crítica clássica aos circuitos compilados é Smolin, Smith &amp; Vargo, <i>Oversimplifying quantum factoring</i> (arXiv:1301.7007).',
   'met.p3': 'Nenhum cookie, nenhum rastreador. Os dados de hardware exibidos são contagens brutas de medição, sem pós-seleção.',
 
-  'foot': '⚛ Fatoração Quântica · um experimento educacional de Alvaro Antelo · irmão do <a href="https://sorteio.vynstream.com">Sorteio Quântico</a>',
+  'foot': '⚛ Fatoração Quântica · um experimento educacional de Alvaro Antelo · irmão do <a href="https://sorteio.vynstream.com">Sorteio Quântico</a> · <a href="https://github.com/AlverGant/quantum-edu">código no GitHub</a>',
   'stats.line': '{visitors} visitantes de {countries} países · {pageviews} visualizações',
 };
