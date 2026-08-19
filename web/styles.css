@@ -286,6 +286,17 @@ details.how h4 { margin: 12px 0 4px; color: var(--text-dim); font-weight: 600; }
 }
 .chip-warn { border-color: var(--amber); color: var(--amber); }
 
+.hw-verdict {
+  margin: 14px 0 4px; padding: 14px 18px;
+  border-radius: var(--radius-sm);
+}
+.hw-verdict b { display: block; font-family: var(--mono); font-size: 24px; margin-bottom: 4px; }
+.hw-verdict span { color: var(--text-dim); font-size: 13.5px; }
+.hw-verdict.ok { background: rgba(74, 222, 128, .08); border: 1px solid rgba(74, 222, 128, .3); }
+.hw-verdict.ok b { color: var(--green); }
+.hw-verdict.bad { background: rgba(255, 180, 84, .07); border: 1px solid rgba(255, 180, 84, .3); }
+.hw-verdict.bad b { color: var(--amber); }
+
 /* ------------------------------------------------------------------ rodapé */
 .foot {
   border-top: 1px solid var(--line-soft);

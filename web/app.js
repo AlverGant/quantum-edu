@@ -6,7 +6,7 @@
 
 import {
   prepare, finalState, phasorsAt, sampleK, continuedFractions,
-  factorsFromPeriod, validateN, validBases, countingQubits, modpow, PRESET_N,
+  factorsFromPeriod, validateN, validBases, countingQubits, modpow, gcd, PRESET_N,
 } from './sim.js';
 import {
   drawHistogram, drawPhasorSum, circuitSVG, SERIES, phaseColor,
@@ -476,6 +476,34 @@ $('sim-again').addEventListener('click', doMeasure);
 // Capítulo 6 — hardware real
 // ---------------------------------------------------------------------------
 
+/**
+ * Quais k's levam sozinhos aos fatores de N (frações continuadas + mdc)?
+ * Para r ímpar com a = b² usamos √(a^r) = b^r — o truque das demonstrações
+ * clássicas de N=21 com a=4. Devolve o conjunto e os fatores.
+ */
+function goodShots(N, a, M) {
+  const inst = { N, a };
+  const good = new Set();
+  let f1 = null, f2 = null;
+  for (let k = 0; k < M; k++) {
+    const r = continuedFractions(k, M, inst).r;
+    if (!r) continue;
+    if (r % 2 === 0) {
+      const fr = factorsFromPeriod(inst, r);
+      if (fr.ok) { good.add(k); f1 = fr.f1; f2 = fr.f2; }
+    } else {
+      const b = Math.round(Math.sqrt(a));
+      if (b * b === a) {
+        const h = modpow(b, r, N);
+        const g1 = gcd(h - 1, N), g2 = gcd(h + 1, N);
+        const g = g1 > 1 && g1 < N ? g1 : g2;
+        if (g > 1 && g < N) { good.add(k); f1 = Math.min(g, N / g); f2 = Math.max(g, N / g); }
+      }
+    }
+  }
+  return { good, f1, f2 };
+}
+
 async function loadHardware() {
   let meta = null;
   try {
@@ -525,6 +553,7 @@ async function loadHardware() {
         ['dash', SERIES.axis, 'uniforme = ruído puro'],
       ])}</div>
       <canvas class="viz" height="200"></canvas>
+      <div class="hw-concl"></div>
       <details class="tbl-details"><summary>ver como tabela</summary><div class="hw-tbl"></div></details>`;
     cards.appendChild(card);
 
@@ -545,15 +574,41 @@ async function loadHardware() {
       return parts.join('<br>');
     });
 
+    // A conclusão que fecha o círculo: destes shots, quantos fatoram N?
+    const { good, f1, f2 } = goodShots(c.N, c.a, M);
+    const chance = good.size / M;
+    const concl = card.querySelector('.hw-concl');
+    if (res) {
+      let hit = 0;
+      for (const [k, n] of Object.entries(res.counts)) if (good.has(Number(k))) hit += n;
+      const frac = hit / res.shots;
+      if (frac > chance * 1.5) {
+        concl.innerHTML = `<div class="hw-verdict ok"><b>→ ${c.N} = ${f1} × ${f2}</b>
+          <span>${fmt(hit)} dos ${fmt(res.shots)} shots (${fmtP(frac)}) caíram num k que,
+          sozinho, entrega os fatores via frações continuadas + mdc — um chute cego
+          acertaria ${fmtP(chance)}. Basta UMA medição boa, e aqui quase metade serve.</span></div>`;
+      } else {
+        concl.innerHTML = `<div class="hw-verdict bad"><b>→ os fatores NÃO saem daqui</b>
+          <span>só ${fmtP(frac)} dos shots caíram em k "bom" — praticamente igual ao
+          chute cego (${fmtP(chance)}). O circuito afogou no ruído antes de computar:
+          este histograma não sabe que ${c.N} = ${f1} × ${f2}.</span></div>`;
+      }
+    } else {
+      const idealHit = [...good].reduce((s, k) => s + (idealNum[k] ?? 0), 0);
+      concl.innerHTML = `<p class="fine">no ideal, ${fmtP(idealHit)} das medições
+        levariam direto aos fatores ${f1} × ${f2}.</p>`;
+    }
+
     const rows = [];
     for (let k = 0; k < M; k++) {
       const mv = res ? (values[k] ?? 0) : null;
       const iv = idealNum[k] ?? 0;
       if ((mv ?? 0) > 0 || iv > 0) {
-        rows.push([k, mv != null ? (mv * 100).toFixed(2) + '%' : '—', (iv * 100).toFixed(2) + '%']);
+        rows.push([k, mv != null ? (mv * 100).toFixed(2) + '%' : '—', (iv * 100).toFixed(2) + '%',
+          good.has(k) ? `✓ leva a ${f1} × ${f2}` : '—']);
       }
     }
-    card.querySelector('.hw-tbl').innerHTML = tableHTML(rows, ['k', 'medido', 'ideal']);
+    card.querySelector('.hw-tbl').innerHTML = tableHTML(rows, ['k', 'medido', 'ideal', 'fatora?']);
   }
 }
 loadHardware();
