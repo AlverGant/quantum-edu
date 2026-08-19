@@ -55,7 +55,7 @@ from qiskit import qasm3
 from qiskit.circuit.library import PhaseGate, UnitaryGate, QFTGate
 from qiskit.synthesis import synth_qft_full
 from qiskit.quantum_info import Statevector
-from qiskit_ibm_runtime.fake_provider import FakeMarrakesh, FakeFez
+from qiskit_ibm_runtime.fake_provider import FakeMarrakesh, FakeFez, FakeKingston
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -63,6 +63,7 @@ ROOT = Path(__file__).resolve().parent.parent
 BACKENDS = {
     "ibm_marrakesh": FakeMarrakesh,
     "ibm_fez": FakeFez,
+    "ibm_kingston": FakeKingston,
 }
 
 SEED_TRANSPILE = 2026  # reprodutibilidade: mesmo layout a cada rodada

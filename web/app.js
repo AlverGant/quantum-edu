@@ -454,7 +454,9 @@ async function loadHardware() {
 
   let run = null;
   try {
-    const r = await (await fetch('/api/runs')).json();
+    // no-cache: revalida sempre — sem isso, quem visitou antes da primeira
+    // rodada ficava vendo "sem rodada" até o max-age do navegador expirar.
+    const r = await (await fetch('/api/runs', { cache: 'no-cache' })).json();
     run = r.run;
   } catch { /* preview local sem Worker: segue sem dados reais */ }
 

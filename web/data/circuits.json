@@ -26,6 +26,11 @@
     "depth": 223,
     "twoq_gates": 83,
     "total_gates": 338
+   },
+   "ibm_kingston": {
+    "depth": 223,
+    "twoq_gates": 83,
+    "total_gates": 338
    }
   }
  },
@@ -60,6 +65,11 @@
     "depth": 141,
     "twoq_gates": 39,
     "total_gates": 227
+   },
+   "ibm_kingston": {
+    "depth": 140,
+    "twoq_gates": 39,
+    "total_gates": 226
    }
   }
  },
@@ -90,6 +100,11 @@
     "depth": 26653,
     "twoq_gates": 12428,
     "total_gates": 52870
+   },
+   "ibm_kingston": {
+    "depth": 26645,
+    "twoq_gates": 12428,
+    "total_gates": 52846
    }
   }
  }
