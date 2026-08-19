@@ -16,6 +16,15 @@ const $ = (id) => document.getElementById(id);
 const fmt = (x) => x.toLocaleString('pt-BR');
 const fmtBig = (n) => (1n << BigInt(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
+/** Probabilidade para humanos: "25%", "1,6%", "<0,01%" — nunca "2.5e-1". */
+const fmtP = (p) => {
+  if (p <= 0) return '0%';
+  if (p < 0.0001) return '<0,01%';
+  const v = p * 100;
+  const dec = v >= 10 ? 0 : v >= 1 ? 1 : 2;
+  return v.toFixed(dec).replace('.', ',') + '%';
+};
+
 // ---------------------------------------------------------------------------
 // Infra de gráficos: registro para redesenho em resize + tooltip único
 // ---------------------------------------------------------------------------
@@ -156,9 +165,19 @@ function interferenceDraw() {
   const delta = (v / 200) * (Math.PI / 3);
   const angles = Array.from({ length: INT_N }, (_, j) => j * delta);
   chart($('int-canvas'), (cv) => {
-    drawPhasorSum(cv, angles);
+    drawPhasorSum(cv, angles, { mono: true });
     return null;
   }, null);
+
+  let re = 0, im = 0;
+  for (const th of angles) { re += Math.cos(th); im += Math.sin(th); }
+  const pct = Math.round((Math.hypot(re, im) / INT_N) * 100);
+  let cls, txt;
+  if (pct >= 99) { cls = 'v-strong'; txt = 'todas apontando juntas — soma máxima'; }
+  else if (pct >= 60) { cls = 'v-strong'; txt = 'quase alinhadas — a soma ainda é grande'; }
+  else if (pct >= 15) { cls = 'v-mid'; txt = 'desalinhando — as setas começam a se engolir'; }
+  else { cls = 'v-dead'; txt = 'círculo fechado — as setas se cancelaram, não sobra nada'; }
+  $('int-verdict').innerHTML = `soma = <b class="${cls}">${pct}%</b> · ${txt}`;
 }
 $('int-slider').addEventListener('input', interferenceDraw);
 $('int-c').addEventListener('click', () => { $('int-slider').value = '0'; interferenceDraw(); });
@@ -234,6 +253,9 @@ $('sim-go').addEventListener('click', () => {
   sim.orbitSel = null;
   sim.measured = null;
   sim.attempts = 0;
+  $('sim-result').innerHTML = '';
+  $('sim-measure').classList.remove('hidden');
+  $('sim-again').classList.add('hidden');
   $('sim-body').classList.remove('hidden');
   $('sim-regs').innerHTML =
     `registrador de contagem: <b>${inst.m} qubits</b> (M = 2<sup>${inst.m}</sup> = ${fmt(inst.M)} valores) · ` +
@@ -301,9 +323,9 @@ function drawStageChart() {
     ]);
     const values = new Float64Array(i.M).fill(1 / i.M);
     const phases = new Float64Array(i.M);
-    chart(cv, (c) => drawHistogram(c, { values, phases }),
-      (k) => `x = ${k}<br>P = 1/M = ${(1 / i.M).toExponential(2)}`);
-    fillTable(Array.from({ length: Math.min(i.M, 64) }, (_, k) => [k, (1 / i.M).toExponential(3)]),
+    chart(cv, (c) => drawHistogram(c, { values, phases, percent: true }),
+      (k) => `x = ${k}<br>chance: 1 em ${fmt(i.M)} (${fmtP(1 / i.M)})`);
+    fillTable(Array.from({ length: Math.min(i.M, 64) }, (_, k) => [k, fmtP(1 / i.M)]),
       ['x', 'probabilidade'], i.M > 64 ? `mostrando 64 de ${fmt(i.M)} linhas — todas iguais` : '');
     return;
   }
@@ -314,14 +336,14 @@ function drawStageChart() {
         ['bar', SERIES.measured, `probabilidade de cada valor do trabalho (clique para ver o pente)`],
       ]);
       const values = new Float64Array(i.r).fill(1 / i.r);
-      chart(cv, (c) => drawHistogram(c, { values, labels: i.orbit, maxY: Math.min(1, 1.6 / i.r) }),
-        (b) => `trabalho = ${i.orbit[b]} = ${i.a}<sup>${b}</sup> mod ${i.N}<br>P = 1/r = ${(1 / i.r).toFixed(3)}<br><i>clique para ver o pente de x's</i>`);
+      chart(cv, (c) => drawHistogram(c, { values, labels: i.orbit, maxY: Math.min(1, 1.6 / i.r), percent: true }),
+        (b) => `trabalho = ${i.orbit[b]} = ${i.a}<sup>${b}</sup> mod ${i.N}<br>chance: ${fmtP(1 / i.r)}<br><i>clique para ver o pente de x's</i>`);
       cv.onclick = (ev) => {
         const h = charts.get(cv)?.hit;
         const b = h?.hitTest(ev.clientX, ev.clientY) ?? -1;
         if (b >= 0) { sim.orbitSel = b; drawStageChart(); }
       };
-      fillTable(i.orbit.map((w, b) => [`${i.a}<sup>${b}</sup> mod ${i.N}`, w, (1 / i.r).toFixed(4)]),
+      fillTable(i.orbit.map((w, b) => [`${i.a}<sup>${b}</sup> mod ${i.N}`, w, fmtP(1 / i.r)]),
         ['origem', 'valor do trabalho', 'probabilidade'], '');
     } else {
       const sRes = sim.orbitSel;
@@ -330,7 +352,7 @@ function drawStageChart() {
       ]) + ` <button class="btn tiny ghost" id="sim-back-orbit">← voltar à órbita</button>`;
       const values = new Float64Array(i.M);
       for (let x = sRes; x < i.M; x += i.r) values[x] = 1 / i.M;
-      chart(cv, (c) => drawHistogram(c, { values }),
+      chart(cv, (c) => drawHistogram(c, { values, percent: true }),
         (x) => values[x] > 0
           ? `x = ${x} ✓ (${i.a}<sup>${x}</sup> ≡ ${i.orbit[sRes]} mod ${i.N})`
           : `x = ${x} — fora deste pente`);
@@ -356,15 +378,15 @@ function drawStageChart() {
   chart(cv, (c) => drawHistogram(c, {
     values: probs, ideal,
     highlight: sim.stage === 3 ? sim.measured : null,
-    uniform: true,
+    uniform: true, percent: true,
   }), (k) => {
     const p = probs[k];
     const near = Math.round((k * i.r) / i.M);
-    return `k = ${k}<br>P(k) = ${p.toExponential(3)}<br>k·r/M ≈ ${((k * i.r) / i.M).toFixed(2)} ${p > 1 / i.M ? `→ perto de ${near}` : ''}`;
+    return `k = ${k}<br>chance de medir: ${fmtP(p)}<br>k·r/M ≈ ${((k * i.r) / i.M).toFixed(2)} ${p > 1 / i.M ? `→ perto de ${near}` : ''}`;
   });
   const top = [...probs].map((p, k) => [k, p]).sort((a, b) => b[1] - a[1]).slice(0, 24)
     .sort((a, b) => a[0] - b[0]);
-  fillTable(top.map(([k, p]) => [k, p.toFixed(5), `${(k / i.M).toFixed(4)} ≈ s/r`]),
+  fillTable(top.map(([k, p]) => [k, fmtP(p), `${(k / i.M).toFixed(4)} ≈ s/r`]),
     ['k', 'P(k)', 'k/M'], `os 24 k's mais prováveis de ${fmt(i.M)}`);
 }
 
@@ -380,23 +402,19 @@ function drawPhasor() {
   const sRes = sim.orbitSel ?? 0;
   const { angles, total, shown } = phasorsAt(i, k, sRes);
   chart($('sim-phasor'), (c) => {
-    // |soma dos Q fasores|/Q — recomputa com todos, não só os desenhados.
-    let re = 0, im = 0;
-    for (let j = 0, x = sRes; x < i.M; j++, x += i.r) {
-      const th = (-2 * Math.PI * k * x) / i.M;
-      re += Math.cos(th); im += Math.sin(th);
-    }
-    const frac = Math.hypot(re, im) / total;
-    drawPhasorSum(c, angles, { label: `|soma| = ${(frac * 100).toFixed(1)}% do máximo` });
+    drawPhasorSum(c, angles);
     return null;
   }, null);
   const p = sim.fs.probs[k];
+  const strong = p > 1.2 / i.M;
   $('sim-phasor-text').innerHTML =
-    `Em k = <b>${k}</b>, os ${fmt(total)} fasores do pente ` +
-    (shown < total ? `(desenhando os primeiros ${shown}) ` : '') +
-    `somam para P(k) = <b>${p.toExponential(2)}</b>. ` +
-    `Os picos vivem em k ≈ múltiplos de M/r = ${(i.M / i.r).toFixed(1)}. ` +
-    `<i>Nenhuma barra foi "escolhida" por ninguém: só sobreviveu quem interferiu construtivamente.</i>`;
+    (strong
+      ? `Em k = <b>${k}</b> as ${fmt(total)} setas chegam <b>alinhadas</b> — interferência construtiva.`
+      : `Em k = <b>${k}</b> as setas dão a volta e <b>se engolem</b> — interferência destrutiva.`) +
+    ` Chance de a medição dar este k: <b>${fmtP(p)}</b>.` +
+    (shown < total ? ` (desenhando as primeiras ${shown} de ${fmt(total)} setas)` : '') +
+    ` Os picos vivem em k ≈ múltiplos de M/r = ${(i.M / i.r).toFixed(1)}.` +
+    ` <i>Ninguém "escolheu" os picos: só sobreviveu quem interferiu construtivamente.</i>`;
 }
 $('sim-k').addEventListener('input', drawPhasor);
 
@@ -414,27 +432,42 @@ function doMeasure() {
   const cf = continuedFractions(k, i.M, i);
   const fr = factorsFromPeriod(i, cf.r);
 
+  // A conta inteira fica num "ver detalhes" — o RESULTADO vem primeiro,
+  // grande, sem exigir que ninguém leia uma tabela de convergentes.
   const cfRows = cf.steps.map(({ p, q, verdict }) => [`${p}/${q}`, verdict]);
-  let html = `<div class="measure-out">
-    <p class="mono big-read">k = ${k} &nbsp;→&nbsp; k/M = ${k}/${i.M}</p>
+  const how = `<details class="how">
+    <summary>ver a conta: da medição aos ${fr.ok ? 'fatores' : 'becos sem saída'}</summary>
+    <p class="fine">A medição deu <b>k = ${k}</b>, ou seja, k/M = ${k}/${i.M}.</p>
     <h4>Frações continuadas de ${k}/${i.M}</h4>
-    ${cfRows.length ? tableHTML(cfRows, ['convergente p/q', 'q é o período?']) : '<p class="fine">k = 0 não carrega informação — azar honesto.</p>'}`;
+    ${cfRows.length ? tableHTML(cfRows, ['convergente p/q', 'q é o período?']) : '<p class="fine">k = 0 não carrega informação nenhuma — azar honesto.</p>'}
+    ${fr.ok ? `<p class="fine">Com r = ${cf.r}: ${i.a}<sup>${cf.r}/2</sup> mod ${i.N} = ${fr.half},
+      e mdc(${fr.half} ∓ 1, ${i.N}) entrega ${fr.f1} e ${fr.f2}. A conta final é
+      100% clássica — o quantum serviu só para achar r, que é a parte que nenhum
+      computador clássico sabe fazer rápido.</p>` : ''}
+  </details>`;
 
+  let html;
   if (fr.ok) {
-    html += `<p class="result-ok">r = ${cf.r} &nbsp;→&nbsp; ${i.a}<sup>${cf.r}/2</sup> mod ${i.N} = ${fr.half}
-      &nbsp;→&nbsp; mdc(${fr.half}∓1, ${i.N}) &nbsp;→&nbsp;
-      <b>${i.N} = ${fr.f1} × ${fr.f2}</b> 🎉</p>
-      <p class="fine">em ${sim.attempts} ${sim.attempts === 1 ? 'medição' : 'medições'}.
-      A conta final foi clássica; o quantum serviu só para achar r — que é
-      exatamente a parte que nenhum computador clássico sabe fazer rápido.</p>`;
+    html = `<div class="verdict verdict-ok">
+      <div class="v-big">${i.N} = ${fr.f1} × ${fr.f2}</div>
+      <div class="v-sub">✓ fatorado ${sim.attempts === 1 ? 'na primeira medição'
+        : `na ${sim.attempts}ª medição`} — a interferência apontou o período r = ${cf.r},
+        e dois mdc fecharam a conta</div>
+    </div>` + how;
   } else {
-    html += `<p class="result-bad">${fr.why}.</p>
-      <p class="fine">tentativa ${sim.attempts} — o Shor real também repete: a
-      probabilidade de sucesso por medição é alta, mas não é 1.</p>`;
+    html = `<div class="verdict verdict-bad">
+      <div class="v-big">essa medição não serviu ✗</div>
+      <div class="v-sub">${fr.why}. Acontece — o algoritmo é um sorteio com as
+        chances viciadas a favor: aperte <b>medir de novo</b>. (tentativa ${sim.attempts})</div>
+    </div>` + how;
   }
-  html += '</div>';
   $('sim-result').innerHTML = html;
-  $('sim-again').classList.remove('hidden');
+  // Depois da primeira medição, "medir de novo" vira o botão principal.
+  $('sim-measure').classList.add('hidden');
+  const again = $('sim-again');
+  again.classList.remove('hidden');
+  again.classList.toggle('ghost', fr.ok);
+  again.classList.toggle('small', fr.ok);
 }
 $('sim-measure').addEventListener('click', doMeasure);
 $('sim-again').addEventListener('click', doMeasure);
@@ -504,7 +537,7 @@ async function loadHardware() {
     chart(cv, (canvas) => drawHistogram(canvas, {
       values: res ? values : new Float64Array(M),
       ideal: idealNum,
-      uniform: true,
+      uniform: true, percent: true,
     }), (k) => {
       const parts = [`k = ${k}`];
       if (res) parts.push(`medido: ${((values[k] ?? 0) * 100).toFixed(1)}% (${res.counts[k] ?? 0}/${res.shots})`);

@@ -79,7 +79,12 @@ export function drawHistogram(canvas, opts) {
   ctx.font = '11px ui-monospace, monospace';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
-  const decimals = maxY >= 3 ? 0 : maxY >= 0.3 ? 2 : maxY >= 0.03 ? 3 : 4;
+  // Eixo em % quando o dado é probabilidade — "25%" fala com todo mundo,
+  // "0.25" só com quem já sabia.
+  const pm = maxY * 100;
+  const decimals = opts.percent
+    ? (pm >= 30 ? 0 : pm >= 3 ? 1 : 2)
+    : (maxY >= 3 ? 0 : maxY >= 0.3 ? 2 : maxY >= 0.03 ? 3 : 4);
   for (let i = 0; i <= 3; i++) {
     const yv = (maxY * i) / 3;
     const y = padT + plotH - (plotH * i) / 3;
@@ -87,7 +92,8 @@ export function drawHistogram(canvas, opts) {
     ctx.moveTo(padL, y);
     ctx.lineTo(w - padR, y);
     ctx.stroke();
-    ctx.fillText(yv.toFixed(decimals), padL - 6, y);
+    const label = opts.percent ? (yv * 100).toFixed(decimals) + '%' : yv.toFixed(decimals);
+    ctx.fillText(label, padL - 6, y);
   }
 
   const slot = plotW / n;
@@ -203,11 +209,12 @@ export function drawPhasorSum(canvas, angles, opts = {}) {
   const X = (p) => ox + p.x * scale;
   const Y = (p) => oy - p.y * scale;
 
-  // Flechinhas individuais, coloridas pela própria fase (matiz = ângulo,
-  // e o ângulo desenhado é a codificação redundante da mesma fase).
+  // Flechinhas individuais. opts.mono usa uma cor só (widgets didáticos);
+  // sem mono, o matiz é a fase — e o ângulo desenhado é a codificação
+  // redundante da mesma fase.
   for (let i = 0; i < n; i++) {
     const a = pts[i], b = pts[i + 1];
-    ctx.strokeStyle = phaseColor(angles[i]);
+    ctx.strokeStyle = opts.mono ? '#35e6d4' : phaseColor(angles[i]);
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(X(a), Y(a));
@@ -215,34 +222,47 @@ export function drawPhasorSum(canvas, angles, opts = {}) {
     ctx.stroke();
     // Ponta da flecha.
     const ang = Math.atan2(Y(b) - Y(a), X(b) - X(a));
-    const hs = Math.min(6, scale * 0.5);
-    if (hs > 2) {
+    const hs = Math.min(9, scale * 0.6);
+    if (hs > 2.5) {
       ctx.beginPath();
       ctx.moveTo(X(b), Y(b));
-      ctx.lineTo(X(b) - hs * Math.cos(ang - 0.4), Y(b) - hs * Math.sin(ang - 0.4));
+      ctx.lineTo(X(b) - hs * Math.cos(ang - 0.45), Y(b) - hs * Math.sin(ang - 0.45));
       ctx.moveTo(X(b), Y(b));
-      ctx.lineTo(X(b) - hs * Math.cos(ang + 0.4), Y(b) - hs * Math.sin(ang + 0.4));
+      ctx.lineTo(X(b) - hs * Math.cos(ang + 0.45), Y(b) - hs * Math.sin(ang + 0.45));
       ctx.stroke();
     }
   }
 
-  // Resultante.
+  // Resultante: desenhada DESLOCADA em paralelo (como uma cota de desenho
+  // técnico) — em cima do caminho ela esconderia as setinhas quando tudo
+  // está alinhado, que é justamente o caso mais importante.
   const end = pts[n];
+  const len = Math.hypot(end.x, end.y);
   ctx.strokeStyle = SERIES.accent;
   ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(X(pts[0]), Y(pts[0]));
-  ctx.lineTo(X(end), Y(end));
-  ctx.stroke();
-
-  const len = Math.hypot(end.x, end.y);
-  ctx.fillStyle = SERIES.text;
-  ctx.font = '12px ui-monospace, monospace';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  const frac = len / n;
-  const label = opts.label ?? `|soma| = ${(frac * 100).toFixed(1)}% do máximo`;
-  ctx.fillText(label, 8, 6);
+  if (len * scale > 4) {
+    const dirX = (X(end) - X(pts[0])) / (len * scale);
+    const dirY = (Y(end) - Y(pts[0])) / (len * scale);
+    const off = 12;
+    const ox2 = -dirY * off, oy2 = dirX * off;
+    const x0 = X(pts[0]) + ox2, y0 = Y(pts[0]) + oy2;
+    const x1 = X(end) + ox2, y1 = Y(end) + oy2;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    const ang = Math.atan2(y1 - y0, x1 - x0);
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 - 11 * Math.cos(ang - 0.45), y1 - 11 * Math.sin(ang - 0.45));
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 - 11 * Math.cos(ang + 0.45), y1 - 11 * Math.sin(ang + 0.45));
+    ctx.stroke();
+  } else {
+    // Soma (quase) zero: um pontinho onde o caminho voltou ao início.
+    ctx.fillStyle = SERIES.accent;
+    ctx.beginPath();
+    ctx.arc(X(pts[0]), Y(pts[0]), 5, 0, 2 * Math.PI);
+    ctx.fill();
+  }
 }
 
 /**

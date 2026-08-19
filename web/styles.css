@@ -252,17 +252,26 @@ canvas.viz { cursor: crosshair; }
 
 .step-nav { justify-content: space-between; margin-top: 18px; }
 
-.measure-out { margin-top: 14px; }
-.measure-out h4 { margin: 14px 0 4px; color: var(--text-dim); font-weight: 600; }
-.result-ok {
-  border-left: 3px solid var(--green); padding: 8px 14px;
-  background: rgba(74, 222, 128, .06); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  font-size: 17px;
+.verdict {
+  border-radius: var(--radius-sm);
+  padding: 20px 24px; margin: 16px 0 10px;
 }
-.result-bad {
-  border-left: 3px solid var(--amber); padding: 8px 14px;
-  background: rgba(255, 180, 84, .06); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-}
+.verdict-ok { background: rgba(74, 222, 128, .08); border: 1px solid rgba(74, 222, 128, .35); }
+.verdict-bad { background: rgba(255, 180, 84, .07); border: 1px solid rgba(255, 180, 84, .3); }
+.v-big { font-family: var(--mono); font-weight: 700; letter-spacing: -.01em; }
+.verdict-ok .v-big { color: var(--green); font-size: clamp(30px, 5vw, 46px); }
+.verdict-bad .v-big { color: var(--amber); font-size: 22px; }
+.v-sub { color: var(--text-dim); margin-top: 8px; font-size: 14.5px; }
+
+details.how { margin: 8px 0 4px; font-size: 13.5px; color: var(--text-dim); }
+details.how summary { cursor: pointer; color: var(--text-faint); }
+details.how h4 { margin: 12px 0 4px; color: var(--text-dim); font-weight: 600; }
+
+.int-verdict { margin: 0 0 6px; font-size: 13px; color: var(--text-dim); }
+.int-verdict b { font-size: 24px; margin: 0 2px; }
+.v-strong { color: var(--cyan); }
+.v-mid { color: var(--amber); }
+.v-dead { color: var(--red); }
 
 /* ------------------------------------------------------------------ hardware */
 #hw-cards { display: grid; gap: 22px; margin: 22px 0; }
