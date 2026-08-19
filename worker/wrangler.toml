@@ -20,6 +20,12 @@ binding = "DB"
 database_name = "quantum_edu"
 database_id = "2d109563-9ac7-4418-92b1-bd3e6ab981a1"
 
+# Logs persistentes no painel (Observability -> Workers Logs). Sem isso, o
+# que o cron disser numa falha de madrugada se perde — wrangler tail é só ao
+# vivo. O plano Paid inclui 20M eventos/mês; este Worker gera ~300/dia.
+[observability]
+enabled = true
+
 [triggers]
 # O cron só TOCA a máquina de estados; a periodicidade real da rodada vem de
 # RUN_PERIOD_DAYS. 5 minutos é para o polling do job em voo, não para abrir
