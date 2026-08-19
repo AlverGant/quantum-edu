@@ -23,3 +23,28 @@ CREATE TABLE IF NOT EXISTS shor_runs (
 );
 
 INSERT OR IGNORE INTO shor_state (id, state) VALUES (1, 'idle');
+
+-- Contadores públicos exibidos no site.
+CREATE TABLE IF NOT EXISTS counters (
+  key   TEXT PRIMARY KEY,
+  value INTEGER NOT NULL DEFAULT 0
+) WITHOUT ROWID;
+
+-- Visitantes únicos por dia. `visitor` é hash(sal+dia+IP+user-agent)
+-- truncado: some sozinho na virada do dia e não permite voltar ao IP.
+-- Nenhum IP é gravado em lugar nenhum.
+CREATE TABLE IF NOT EXISTS visitors (
+  day     TEXT NOT NULL,
+  visitor TEXT NOT NULL,
+  country TEXT,
+  PRIMARY KEY (day, visitor)
+) WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS countries (
+  code  TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0
+) WITHOUT ROWID;
+
+INSERT OR IGNORE INTO counters (key, value) VALUES
+  ('pageviews', 0),
+  ('unique_visitors', 0);

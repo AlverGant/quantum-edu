@@ -136,4 +136,5 @@ export default {
   'met.p3': '没有 Cookie，没有追踪器。展示的硬件数据是原始测量计数，未经后选。',
 
   'foot': '⚛ 量子因数分解 · Alvaro Antelo 的教育实验 · <a href="https://sorteio.vynstream.com">量子抽签</a>的姊妹站',
+  'stats.line': '来自 {countries} 个国家和地区的 {visitors} 位访客 · {pageviews} 次浏览',
 };

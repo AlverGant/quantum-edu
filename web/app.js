@@ -537,3 +537,22 @@ async function loadHardware() {
   }
 }
 loadHardware();
+
+// ---------------------------------------------------------------------------
+// Contador de visitas — privacidade primeiro: o servidor não guarda IP;
+// o identificador é hash(sal‖dia‖IP‖user-agent) e muda todo dia.
+// ---------------------------------------------------------------------------
+
+(async () => {
+  try {
+    const s = await (await fetch('/api/visit', { method: 'POST' })).json();
+    if (!s.unique_visitors) return; // preview local ou sal ausente
+    const line = $('stats-line');
+    line.textContent = t('stats.line', {
+      visitors: fmt(s.unique_visitors),
+      countries: fmt(s.countries),
+      pageviews: fmt(s.pageviews),
+    });
+    line.classList.remove('hidden');
+  } catch { /* sem Worker (preview local): sem contador */ }
+})();

@@ -10,6 +10,7 @@
  */
 
 import { tick, latestRun, type Env } from './shor.ts';
+import { handleVisit } from './stats.ts';
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -24,6 +25,10 @@ export default {
 
     if (url.pathname === '/api/runs' && req.method === 'GET') {
       return latestRun(env);
+    }
+
+    if (url.pathname === '/api/visit' && req.method === 'POST') {
+      return handleVisit(req, env);
     }
 
     if (url.pathname === '/api/state' && req.method === 'GET') {

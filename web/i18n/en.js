@@ -136,4 +136,5 @@ export default {
   'met.p3': 'No cookies, no trackers. The hardware data shown is raw measurement counts, no post-selection.',
 
   'foot': '⚛ Quantum Factoring · an educational experiment by Alvaro Antelo · sister of <a href="https://sorteio.vynstream.com">Quantum Draw</a>',
+  'stats.line': '{visitors} visitors from {countries} countries · {pageviews} page views',
 };

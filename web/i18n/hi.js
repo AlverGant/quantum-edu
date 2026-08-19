@@ -136,4 +136,5 @@ export default {
   'met.p3': 'न कुकी, न ट्रैकर। दिखाया गया हार्डवेयर डेटा कच्ची मापन गिनती है, बिना पोस्ट-सिलेक्शन।',
 
   'foot': '⚛ क्वांटम गुणनखंडन · Alvaro Antelo का शैक्षिक प्रयोग · <a href="https://sorteio.vynstream.com">क्वांटम ड्रॉ</a> का सहोदर',
+  'stats.line': '{countries} देशों से {visitors} आगंतुक · {pageviews} पृष्ठ दृश्य',
 };

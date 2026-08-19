@@ -20,6 +20,7 @@ export interface Env {
   IBM_API_KEY?: string;
   IBM_CRN?: string;
   ADMIN_TOKEN?: string;
+  VISITOR_SALT?: string;
   RUN_PERIOD_DAYS?: string;
 }
 

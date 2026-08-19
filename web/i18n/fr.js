@@ -136,4 +136,5 @@ export default {
   'met.p3': 'Ni cookies ni traqueurs. Les données matérielles affichées sont des comptages bruts de mesure, sans post-sélection.',
 
   'foot': '⚛ Factorisation Quantique · une expérience éducative d\'Alvaro Antelo · frère du <a href="https://sorteio.vynstream.com">Tirage Quantique</a>',
+  'stats.line': '{visitors} visiteurs de {countries} pays · {pageviews} pages vues',
 };

@@ -138,4 +138,5 @@ export default {
   'met.p3': 'Nenhum cookie, nenhum rastreador. Os dados de hardware exibidos são contagens brutas de medição, sem pós-seleção.',
 
   'foot': '⚛ Fatoração Quântica · um experimento educacional de Alvaro Antelo · irmão do <a href="https://sorteio.vynstream.com">Sorteio Quântico</a>',
+  'stats.line': '{visitors} visitantes de {countries} países · {pageviews} visualizações',
 };
