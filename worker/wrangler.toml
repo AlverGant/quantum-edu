@@ -18,8 +18,7 @@ custom_domain = true
 [[d1_databases]]
 binding = "DB"
 database_name = "quantum_edu"
-# Preencha com o id devolvido por: npx wrangler d1 create quantum_edu
-database_id = "PREENCHER"
+database_id = "2d109563-9ac7-4418-92b1-bd3e6ab981a1"
 
 [triggers]
 # O cron só TOCA a máquina de estados; a periodicidade real da rodada vem de
