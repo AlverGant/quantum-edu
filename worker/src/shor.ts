@@ -192,8 +192,10 @@ export async function latestRun(env: Env): Promise<Response> {
   return new Response(JSON.stringify(body), {
     headers: {
       'content-type': 'application/json; charset=utf-8',
-      // O dado muda no máximo 1x por semana; 1h de cache tira a D1 do caminho.
-      'cache-control': 'public, max-age=3600',
+      // O dado muda ~1x por semana, mas 1h de max-age fez visitantes verem
+      // "sem rodada" por uma hora depois da primeira rodada completar. 5 min
+      // ainda poupa a D1 e o atraso máximo fica na ordem do cron.
+      'cache-control': 'public, max-age=300',
     },
   });
 }
