@@ -33,7 +33,8 @@
   --shadow: 0 20px 60px -20px rgba(0, 0, 0, .85);
 
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+          "Noto Sans", "Noto Sans Arabic", "Noto Sans Devanagari", "Noto Sans SC", sans-serif;
 
   --maxw: 1060px;
 }
@@ -55,7 +56,20 @@ body {
 
 a { color: var(--cyan); text-decoration: none; }
 a:hover { text-decoration: underline; }
-.mono { font-family: var(--mono); }
+/* Fórmulas, k/M e ids de job ficam LTR mesmo em árabe — senão o navegador
+   embaralha visualmente os dígitos e os operadores. */
+.mono { font-family: var(--mono); direction: ltr; unicode-bidi: embed; }
+.math { direction: ltr; unicode-bidi: embed; }
+
+[dir="rtl"] .chap-n { margin-right: 0; margin-left: 10px; }
+[dir="rtl"] figcaption, [dir="rtl"] .fine { text-align: right; }
+[dir="rtl"] .data-tbl th, [dir="rtl"] .data-tbl td { text-align: right; }
+
+.lang-sel {
+  background: var(--bg-elev-2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 8px;
+  font-size: 13px; padding: 5px 8px; cursor: pointer;
+}
 .hidden { display: none !important; }
 .center { text-align: center; }
 
@@ -258,7 +272,7 @@ canvas.viz { cursor: crosshair; }
 }
 .verdict-ok { background: rgba(74, 222, 128, .08); border: 1px solid rgba(74, 222, 128, .35); }
 .verdict-bad { background: rgba(255, 180, 84, .07); border: 1px solid rgba(255, 180, 84, .3); }
-.v-big { font-family: var(--mono); font-weight: 700; letter-spacing: -.01em; }
+.v-big { font-family: var(--mono); font-weight: 700; letter-spacing: -.01em; direction: ltr; unicode-bidi: embed; }
 .verdict-ok .v-big { color: var(--green); font-size: clamp(30px, 5vw, 46px); }
 .verdict-bad .v-big { color: var(--amber); font-size: 22px; }
 .v-sub { color: var(--text-dim); margin-top: 8px; font-size: 14.5px; }

@@ -7,6 +7,15 @@
 <meta name="description" content="Veja o algoritmo de Shor fatorar um número de ponta a ponta: superposição, interferência, espaço de Hilbert e medição — simulado exatamente no seu navegador e executado num processador quântico real de 156 qubits da IBM.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%9B%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="styles.css">
+<link rel="alternate" hreflang="en" href="https://quantum.vynstream.com/?lang=en">
+<link rel="alternate" hreflang="zh" href="https://quantum.vynstream.com/?lang=zh">
+<link rel="alternate" hreflang="hi" href="https://quantum.vynstream.com/?lang=hi">
+<link rel="alternate" hreflang="es" href="https://quantum.vynstream.com/?lang=es">
+<link rel="alternate" hreflang="ar" href="https://quantum.vynstream.com/?lang=ar">
+<link rel="alternate" hreflang="pt" href="https://quantum.vynstream.com/?lang=pt">
+<link rel="alternate" hreflang="fr" href="https://quantum.vynstream.com/?lang=fr">
+<link rel="alternate" hreflang="ru" href="https://quantum.vynstream.com/?lang=ru">
+<link rel="alternate" hreflang="x-default" href="https://quantum.vynstream.com/">
 <meta property="og:title" content="Fatoração Quântica">
 <meta property="og:description" content="O algoritmo de Shor de ponta a ponta: simulação exata no navegador + execução em hardware quântico real da IBM.">
 <meta property="og:type" content="website">
@@ -17,14 +26,15 @@
   <nav class="nav">
     <a class="brand" href="#">⚛ <b>Fatoração Quântica</b></a>
     <div class="nav-links">
-      <a href="#qubit">Qubit</a>
-      <a href="#hilbert">Hilbert</a>
-      <a href="#periodo">Período</a>
-      <a href="#algoritmo">Algoritmo</a>
-      <a href="#hardware">Hardware real</a>
-      <a href="#cripto">E o RSA?</a>
+      <a href="#qubit" data-i18n="nav.qubit">Qubit</a>
+      <a href="#hilbert" data-i18n="nav.hilbert">Hilbert</a>
+      <a href="#periodo" data-i18n="nav.period">Período</a>
+      <a href="#algoritmo" data-i18n="nav.algo">Algoritmo</a>
+      <a href="#hardware" data-i18n="nav.hw">Hardware real</a>
+      <a href="#cripto" data-i18n="nav.rsa">E o RSA?</a>
     </div>
-    <a class="nav-sib" href="https://sorteio.vynstream.com" title="projeto irmão">Sorteio Quântico ↗</a>
+    <select id="lang-sel" class="lang-sel" aria-label="idioma"></select>
+    <a class="nav-sib" href="https://sorteio.vynstream.com" data-i18n="nav.sib">Sorteio Quântico ↗</a>
   </nav>
 </header>
 
@@ -32,8 +42,8 @@
 
 <!-- ======================================================== hero -->
 <section class="hero">
-  <h1>Fatore um número<br><span class="grad">com física</span></h1>
-  <p class="lead">
+  <h1><span data-i18n="hero.h1a">Fatore um número</span><br><span class="grad" data-i18n="hero.h1b">com física</span></h1>
+  <p class="lead" data-i18n-html="hero.lead">
     Esta página conta o algoritmo de <b>Shor</b> de ponta a ponta — superposição,
     espaço de Hilbert, interferência, medição — com uma simulação <b>exata</b>
     rodando aqui no seu navegador. E depois mostra o mesmo circuito executado
@@ -41,10 +51,10 @@
     crus da medição: os acertos e o ruído.
   </p>
   <p class="hero-cta">
-    <a class="btn" href="#algoritmo">Rodar o algoritmo agora</a>
-    <a class="btn ghost" href="#hardware">Ver o hardware real</a>
+    <a class="btn" href="#algoritmo" data-i18n="hero.cta1">Rodar o algoritmo agora</a>
+    <a class="btn ghost" href="#hardware" data-i18n="hero.cta2">Ver o hardware real</a>
   </p>
-  <p class="hero-note">
+  <p class="hero-note" data-i18n-html="hero.note">
     Projeto irmão do <a href="https://sorteio.vynstream.com">Sorteio Quântico</a> —
     a mesma conta IBM Quantum, o mesmo gosto por provas verificáveis.
   </p>
@@ -52,21 +62,21 @@
 
 <!-- ======================================================== 1. qubit -->
 <section id="qubit" class="chapter">
-  <h2><span class="chap-n">1</span> O qubit: uma seta, não um interruptor</h2>
+  <h2><span class="chap-n">1</span> <span data-i18n="q.h2">O qubit: uma seta, não um interruptor</span></h2>
   <div class="cols">
     <div>
-      <p>
+      <p data-i18n-html="q.p1">
         Um bit é um interruptor: 0 ou 1. Um <b>qubit</b> guarda uma
         <b>amplitude</b> para cada valor — um número complexo, que desenhamos
         como uma <b>seta</b> com comprimento e direção (a <b>fase</b>).
         A probabilidade de medir um valor é o comprimento da seta ao quadrado.
       </p>
-      <p>
+      <p data-i18n-html="q.p2">
         A porta <b>H</b> (Hadamard) divide o caminho: leva |0⟩ para
         <span class="math">(|0⟩ + |1⟩)/√2</span> — os dois valores ao mesmo
         tempo, cada um com probabilidade ½.
       </p>
-      <p>
+      <p data-i18n-html="q.p3">
         O teste que separa isso de um sorteio clássico: aplique H <b>duas
         vezes</b>. Uma moeda jogada duas vezes continua aleatória. O qubit
         <b>volta certinho para |0⟩</b> — porque os dois caminhos que levariam a
@@ -74,8 +84,8 @@
         interferência, e é a alma de tudo que vem a seguir.
       </p>
       <div class="controls">
-        <button id="q-h" class="btn small">aplicar H</button>
-        <button id="q-reset" class="btn small ghost">reiniciar em |0⟩</button>
+        <button id="q-h" class="btn small" data-i18n="q.btnH">aplicar H</button>
+        <button id="q-reset" class="btn small ghost" data-i18n="q.btnReset">reiniciar em |0⟩</button>
         <span id="q-state" class="mono state-chip">|0⟩</span>
       </div>
     </div>
@@ -88,10 +98,10 @@
 
 <!-- ======================================================== 2. hilbert -->
 <section id="hilbert" class="chapter">
-  <h2><span class="chap-n">2</span> O espaço de Hilbert: onde a conta acontece</h2>
+  <h2><span class="chap-n">2</span> <span data-i18n="hil.h2">O espaço de Hilbert: onde a conta acontece</span></h2>
   <div class="cols">
     <div>
-      <p>
+      <p data-i18n-html="hil.p1">
         Com <i>n</i> qubits, o estado é uma lista de <b>2<sup>n</sup></b>
         amplitudes — uma seta para cada combinação de bits. Esse espaço vetorial
         gigante é o <b>espaço de Hilbert</b> do sistema, e cresce
@@ -99,7 +109,7 @@
       </p>
       <p id="hilbert-read" class="big-read"></p>
       <input id="hilbert-n" class="slider" type="range" min="1" max="60" value="18" aria-label="número de qubits">
-      <p class="fine">
+      <p class="fine" data-i18n-html="hil.fine">
         O detalhe que todo texto de divulgação erra: ter 2<sup>n</sup>
         amplitudes <b>não</b> é o mesmo que testar 2<sup>n</sup> respostas.
         Ao medir, você recebe <b>um</b> resultado, sorteado. O truque de um
@@ -110,24 +120,24 @@
     </div>
     <figure class="panel">
       <canvas id="hilbert-canvas" class="viz" height="220"></canvas>
-      <figcaption>Cada barra é uma dimensão do espaço de Hilbert — em escala real até a tela acabar.</figcaption>
+      <figcaption data-i18n-html="hil.caption">Cada barra é uma dimensão do espaço de Hilbert — em escala real até a tela acabar.</figcaption>
     </figure>
   </div>
 </section>
 
 <!-- ======================================================== 3. período -->
 <section id="periodo" class="chapter">
-  <h2><span class="chap-n">3</span> Fatorar vira achar um período</h2>
+  <h2><span class="chap-n">3</span> <span data-i18n="per.h2">Fatorar vira achar um período</span></h2>
   <div class="cols">
     <div>
-      <p>
+      <p data-i18n-html="per.p1">
         A ideia clássica por trás de Shor (e ela é 100% clássica): escolha um
         número <span class="math">a</span> que não divida
         <span class="math">N</span> e olhe a sequência
         <span class="math">a¹, a², a³, … (mod N)</span>. Ela sempre entra num
         ciclo — repete com um <b>período r</b>.
       </p>
-      <p>
+      <p data-i18n-html="per.p2">
         Sabendo <span class="math">r</span> (par, com
         <span class="math">a<sup>r/2</sup> ≢ −1</span>), escreva
         <span class="math">a<sup>r</sup> − 1 ≡ 0 (mod N)</span> e fatore a
@@ -136,7 +146,7 @@
         Os fatores de N se repartem entre os dois parênteses — e o
         <b>mdc</b> de cada parêntese com N os entrega, em tempo de calculadora.
       </p>
-      <p>
+      <p data-i18n-html="per.p3">
         Todo o problema virou: <b>medir o período de uma função que se
         repete</b>. E medir períodos é a especialidade da transformada de
         Fourier — que tem uma versão quântica que roda sobre <i>todas</i> as
@@ -145,15 +155,15 @@
     </div>
     <figure class="panel">
       <canvas id="per-canvas" class="viz" height="220"></canvas>
-      <figcaption>7<sup>x</sup> mod 15 = 1, 7, 4, 13, 1, 7, 4, 13, … — período r = 4.</figcaption>
+      <figcaption data-i18n-html="per.caption">7<sup>x</sup> mod 15 = 1, 7, 4, 13, 1, 7, 4, 13, … — período r = 4.</figcaption>
     </figure>
   </div>
 </section>
 
 <!-- ======================================================== 5. algoritmo -->
 <section id="algoritmo" class="chapter wide">
-  <h2><span class="chap-n">4</span> O algoritmo de Shor, ao vivo</h2>
-  <p class="chapter-lead">
+  <h2><span class="chap-n">4</span> <span data-i18n="alg.h2">O algoritmo de Shor, ao vivo</span></h2>
+  <p class="chapter-lead" data-i18n-html="alg.lead">
     Escolha um número e aperte <b>rodar</b>. O circuito prepara todos os
     expoentes ao mesmo tempo, calcula a<sup>x</sup> mod N de uma só vez, e a
     QFT⁻¹ faz os caminhos errados se <b>cancelarem</b> — sobra o período, e do
@@ -162,19 +172,19 @@
   </p>
 
   <div class="panel sim-controls">
-    <label for="sim-n">Número a fatorar</label>
+    <label for="sim-n" data-i18n="alg.labelN">Número a fatorar</label>
     <input id="sim-n" class="num" type="number" min="9" max="99" step="2" value="15" inputmode="numeric">
     <div id="sim-presets" class="presets"></div>
-    <label for="sim-a">base <span class="math">a</span></label>
+    <label for="sim-a" data-i18n-html="alg.labelA">base <span class="math">a</span></label>
     <select id="sim-a" class="num"></select>
-    <button id="sim-go" class="btn">rodar</button>
+    <button id="sim-go" class="btn" data-i18n="alg.run">rodar</button>
     <span id="sim-err" class="err" role="alert"></span>
   </div>
 
   <div id="sim-body" class="hidden">
     <figure class="circuit-box panel">
       <div id="sim-circuit"></div>
-      <figcaption>Da esquerda para a direita: <b>H</b> põe a contagem em
+      <figcaption data-i18n-html="alg.circCaption">Da esquerda para a direita: <b>H</b> põe a contagem em
       superposição; a caixa <b>a<sup>x</sup> mod N</b> calcula todos os
       expoentes de uma vez; a <b>QFT⁻¹</b> faz os caminhos errados se
       cancelarem; os medidores sorteiam um k já enviesado para o período.</figcaption>
@@ -184,7 +194,7 @@
     <div class="panel step-panel">
       <div id="sim-legend" class="legend"></div>
       <canvas id="sim-canvas" class="viz tall" height="260"></canvas>
-      <details class="tbl-details"><summary>ver como tabela</summary><div id="sim-table"></div></details>
+      <details class="tbl-details"><summary data-i18n="tbl.view">ver como tabela</summary><div id="sim-table"></div></details>
       <div id="sim-result"></div>
     </div>
   </div>
@@ -192,8 +202,8 @@
 
 <!-- ======================================================== 6. hardware -->
 <section id="hardware" class="chapter wide">
-  <h2><span class="chap-n">5</span> Agora no hardware de verdade</h2>
-  <p class="chapter-lead">
+  <h2><span class="chap-n">5</span> <span data-i18n="hw.h2">Agora no hardware de verdade</span></h2>
+  <p class="chapter-lead" data-i18n-html="hw.lead">
     A simulação acima é o algoritmo em condições ideais. Abaixo, os
     <b>histogramas crus</b> dos mesmos circuitos executados num processador
     IBM Quantum da família Heron (156 qubits) — renovados automaticamente,
@@ -205,15 +215,15 @@
   <p id="hw-status" class="fine center"></p>
   <div id="hw-cards"></div>
   <div class="panel prose">
-    <h3>E um circuito sem atalhos? Afoga — nós testamos</h3>
-    <p>
+    <h3 data-i18n="hw.proseH3">E um circuito sem atalhos? Afoga — nós testamos</h3>
+    <p data-i18n-html="hw.prose1">
       Os três circuitos acima são <b>compilados</b>: usam a estrutura de cada
       N para caber no hardware de hoje — como toda "fatoração quântica" já
       demonstrada. Para medir o tamanho dessa concessão, rodamos como controle
       o circuito <b>genérico</b> de Beauregard para o mesmo N=15, o que uma
       fatoração cega exigiria: 14 qubits e <b>12.428 portas de 2 qubits</b>.
     </p>
-    <p>
+    <p data-i18n-html="hw.prose2">
       Cada porta acerta ~99,7% das vezes, e fidelidades se multiplicam: com 83
       portas (0,997<sup>83</sup> ≈ 78%) os picos ficam de pé; com 12.428
       (0,997<sup>12428</sup> ≈ 10<sup>−17</sup>) sobra ruído puro. Foi o que o
@@ -229,9 +239,9 @@
 
 <!-- ======================================================== 7. cripto -->
 <section id="cripto" class="chapter">
-  <h2><span class="chap-n">6</span> "Então o RSA já era?" — ainda não. Mas o relógio anda.</h2>
+  <h2><span class="chap-n">6</span> <span data-i18n="rsa.h2">"Então o RSA já era?" — ainda não. Mas o relógio anda.</span></h2>
   <div class="prose">
-    <p>
+    <p data-i18n-html="rsa.p1">
       Uma chave RSA-2048 tem 617 dígitos. Fatorá-la com Shor exige circuitos
       com <b>bilhões de portas</b> executados sem perder a coerência — as
       estimativas mais citadas falam em <b>~20 milhões de qubits físicos</b>
@@ -240,7 +250,7 @@
       156 qubits físicos e, como você viu acima, tropeça no circuito genérico
       para N=15.
     </p>
-    <p>
+    <p data-i18n-html="rsa.p2">
       Mas a distância é de engenharia, não de princípio — nada na física
       proíbe. Por isso a criptografia já se mexeu: o NIST padronizou em 2024
       os primeiros algoritmos <b>pós-quânticos</b> (ML-KEM, ML-DSA), e a
@@ -253,9 +263,9 @@
 
 <!-- ======================================================== método -->
 <section id="metodo" class="chapter">
-  <h2><span class="chap-n">§</span> Metodologia</h2>
+  <h2><span class="chap-n">§</span> <span data-i18n="met.h2">Metodologia</span></h2>
   <div class="prose fine">
-    <p>
+    <p data-i18n-html="met.p1">
       <b>Simulação no navegador.</b> O estado após o oráculo é
       (1/√M)&nbsp;Σ|x⟩|a<sup>x</sup> mod N⟩; os valores do registrador de
       trabalho o partem em r pentes aritméticos, e a QFT⁻¹ de cada pente é
@@ -263,7 +273,7 @@
       em O(r·M·log M) — sem aproximações e sem fingir: é a mesma álgebra do
       circuito, pelo atalho que a estrutura dele permite.
     </p>
-    <p>
+    <p data-i18n-html="met.p2">
       <b>Circuitos no hardware.</b> Construídos e validados com Qiskit contra a
       distribuição teórica, transpilados offline para as portas nativas do
       Heron (cz, rz, sx, x) e submetidos por um Cloudflare Worker via API REST
@@ -275,7 +285,7 @@
       crítica clássica aos circuitos compilados é Smolin, Smith &amp; Vargo,
       <i>Oversimplifying quantum factoring</i> (arXiv:1301.7007).
     </p>
-    <p>
+    <p data-i18n-html="met.p3">
       Nenhum cookie, nenhum rastreador. Os dados de hardware exibidos são
       contagens brutas de medição, sem pós-seleção.
     </p>
@@ -285,7 +295,7 @@
 </main>
 
 <footer class="foot">
-  <p>⚛ Fatoração Quântica · um experimento educacional de Alvaro Antelo ·
+  <p data-i18n-html="foot">⚛ Fatoração Quântica · um experimento educacional de Alvaro Antelo ·
      irmão do <a href="https://sorteio.vynstream.com">Sorteio Quântico</a></p>
 </footer>
 

@@ -41,20 +41,22 @@ export function multiplicativeOrder(a, N) {
   return 0; // gcd(a,N) != 1
 }
 
-/** N válido para a demonstração: ímpar, composto, não potência de primo. */
+/** N válido para a demonstração: ímpar, composto, não potência de primo.
+ * Devolve null ou {code, p} — quem fala com humanos (e em que língua) é o
+ * app.js, não a matemática. */
 export function validateN(N) {
-  if (!Number.isInteger(N) || N < 9) return 'N precisa ser um inteiro ≥ 9.';
-  if (N % 2 === 0) return 'N par: metade é fator — nenhum quantum necessário.';
+  if (!Number.isInteger(N) || N < 9) return { code: 'range' };
+  if (N % 2 === 0) return { code: 'even' };
   for (let p = 3; p * p <= N; p += 2) {
     if (N % p === 0) {
       // Composto. Potência de primo? (Shor trata esse caso classicamente.)
       let q = N;
       while (q % p === 0) q /= p;
-      if (q === 1) return `N = ${p}^k é potência de primo — há algoritmo clássico rápido.`;
+      if (q === 1) return { code: 'primepower', p };
       return null;
     }
   }
-  return 'N é primo — não há o que fatorar.';
+  return { code: 'prime' };
 }
 
 /** Bases coprimas com N, ordenadas pela ordem multiplicativa (didático). */
@@ -220,26 +222,27 @@ export function continuedFractions(k, M, inst) {
   const { N, a } = inst;
   let found = null;
   for (const { p, q } of convs) {
-    if (q >= N) { steps.push({ p, q, verdict: `q=${q} ≥ N — passou do limite` }); break; }
+    if (q >= N) { steps.push({ p, q, status: 'overflow' }); break; }
     if (q === 0) continue;
     const ok = modpow(a, q, N) === 1;
-    steps.push({ p, q, verdict: ok ? `a^${q} ≡ 1 (mod ${N}) — período!` : `a^${q} ≢ 1 — ainda não` });
+    steps.push({ p, q, status: ok ? 'period' : 'no' });
     if (ok && !found) { found = q; break; }
   }
   return { quotients: quots, steps, r: found };
 }
 
-/** Do período aos fatores — pode falhar; a falha é parte do algoritmo. */
+/** Do período aos fatores — pode falhar; a falha é parte do algoritmo.
+ * Falhas voltam como código ('no-period' | 'odd' | 'neg-one' | 'gcd'). */
 export function factorsFromPeriod(inst, r) {
   const { N, a } = inst;
-  if (!r) return { ok: false, why: 'nenhum convergente deu o período — meça de novo' };
-  if (r % 2 === 1) return { ok: false, why: `r=${r} é ímpar — não dá para tirar raiz; troque a base ou meça de novo` };
+  if (!r) return { ok: false, code: 'no-period' };
+  if (r % 2 === 1) return { ok: false, code: 'odd', r };
   const h = modpow(a, r / 2, N);
-  if (h === N - 1) return { ok: false, why: `a^(r/2) ≡ −1 (mod N) — caso degenerado; troque a base` };
+  if (h === N - 1) return { ok: false, code: 'neg-one', r };
   const f1 = gcd(h - 1, N);
   const f2 = gcd(h + 1, N);
   const f = f1 > 1 && f1 < N ? f1 : f2;
-  if (f <= 1 || f >= N) return { ok: false, why: 'gcd não separou os fatores — meça de novo' };
+  if (f <= 1 || f >= N) return { ok: false, code: 'gcd', r };
   return { ok: true, f1: Math.min(f, N / f), f2: Math.max(f, N / f), half: h };
 }
 

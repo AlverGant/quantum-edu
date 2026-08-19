@@ -269,8 +269,13 @@ export function drawPhasorSum(canvas, angles, opts = {}) {
  * Diagrama do circuito de estimativa de fase, em SVG.
  * Devolve o elemento raiz; `highlightStage(idx)` acende uma etapa (0..3).
  */
-export function circuitSVG(container, inst) {
+export function circuitSVG(container, inst, labels = {}) {
   const m = inst.m;
+  const L = {
+    counting: labels.counting ?? `${m} qubits — contagem`,
+    work: labels.work ?? `${inst.nWork} qubits — trabalho`,
+    aria: labels.aria ?? `Circuito de estimativa de fase com ${m} qubits de contagem`,
+  };
   const showC = Math.min(m, 4);          // fios de contagem desenhados
   const elide = m > showC;
   const rows = showC + (elide ? 1 : 0) + 1; // +1 = trabalho (feixe)
@@ -284,8 +289,7 @@ export function circuitSVG(container, inst) {
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
   svg.setAttribute('class', 'circuit');
   svg.setAttribute('role', 'img');
-  svg.setAttribute('aria-label',
-    `Circuito de estimativa de fase: ${m} qubits de contagem em superposição controlam potências de U, seguidos de QFT inversa e medição`);
+  svg.setAttribute('aria-label', L.aria);
 
   const el = (name, attrs, text) => {
     const e = document.createElementNS(NS, name);
@@ -314,12 +318,12 @@ export function circuitSVG(container, inst) {
       // Feixe: linha dupla = registrador de nWork qubits.
       svg.appendChild(el('line', { x1: 46, y1: y - 2, x2: width - 16, y2: y - 2, class: 'c-wire' }));
       svg.appendChild(el('line', { x1: 46, y1: y + 2, x2: width - 16, y2: y + 2, class: 'c-wire' }));
-      svg.appendChild(el('text', { x: 52, y: y - 8, class: 'c-small' }, `${inst.nWork} qubits — trabalho`));
+      svg.appendChild(el('text', { x: 52, y: y - 8, class: 'c-small' }, L.work));
     } else {
       svg.appendChild(el('line', { x1: 46, y1: y, x2: width - 16, y2: y, class: 'c-wire' }));
     }
   }
-  svg.appendChild(el('text', { x: 52, y: 12, class: 'c-small' }, `${m} qubits — contagem`));
+  svg.appendChild(el('text', { x: 52, y: 12, class: 'c-small' }, L.counting));
 
   // Etapa 0: coluna de H.
   const hx = 70;

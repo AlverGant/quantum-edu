@@ -1,7 +1,11 @@
 /**
- * Cola da página: widgets dos capítulos, o passo-a-passo do algoritmo e a
- * seção de hardware real. Toda a matemática vive em sim.js; todo o desenho
- * em viz.js. Aqui é só estado de interface.
+ * Cola da página: widgets dos capítulos, o simulador e a seção de hardware.
+ * Toda a matemática vive em sim.js; todo o desenho em viz.js; todo o texto
+ * em i18n/<lang>.js. Aqui é só estado de interface.
+ *
+ * Troca de idioma = salvar + recarregar: os tooltips e legendas vivem em
+ * closures de gráfico, e re-renderizar tudo ao vivo custaria mais código do
+ * que um reload custa ao visitante (a página é estática e leve).
  */
 
 import {
@@ -9,19 +13,64 @@ import {
   factorsFromPeriod, validateN, validBases, modpow, gcd, PRESET_N,
 } from './sim.js';
 import { drawHistogram, circuitSVG, SERIES } from './viz.js';
+import { LOCALES, pickLocale, loadStrings, switchLocale } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
-const fmt = (x) => x.toLocaleString('pt-BR');
-const fmtBig = (n) => (1n << BigInt(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
-/** Probabilidade para humanos: "25%", "1,6%", "<0,01%" — nunca "2.5e-1". */
+// ---------------------------------------------------------------------------
+// Idioma: carrega o dicionário antes de qualquer render
+// ---------------------------------------------------------------------------
+
+const LANG = pickLocale();
+const INTL = LOCALES[LANG].intl;
+const S = await loadStrings(LANG);
+
+/** t('chave', {param: valor}) — interpolação de {param} no dicionário. */
+function t(key, params = {}) {
+  let s = S[key] ?? key;
+  for (const [k, v] of Object.entries(params)) s = s.replaceAll(`{${k}}`, String(v));
+  return s;
+}
+
+const fmt = (x) => x.toLocaleString(INTL);
+const fmtBig = (n) => BigInt.prototype.toLocaleString
+  ? (1n << BigInt(n)).toLocaleString(INTL)
+  : (1n << BigInt(n)).toString();
+
+/** Probabilidade para humanos: "25%", "1,6%" — nunca "2.5e-1". */
 const fmtP = (p) => {
   if (p <= 0) return '0%';
   if (p < 0.0001) return '<0,01%';
   const v = p * 100;
   const dec = v >= 10 ? 0 : v >= 1 ? 1 : 2;
-  return v.toFixed(dec).replace('.', ',') + '%';
+  return v.toLocaleString(INTL, { minimumFractionDigits: dec, maximumFractionDigits: dec }) + '%';
 };
+
+// Aplica o dicionário sobre o HTML (o texto-fonte em português fica no
+// arquivo como fallback e conteúdo do primeiro paint).
+function applyI18n() {
+  document.documentElement.lang = INTL.split('-u-')[0];
+  document.documentElement.dir = LOCALES[LANG].dir;
+  document.title = t('meta.title');
+  document.querySelector('meta[name="description"]')?.setAttribute('content', t('meta.desc'));
+  for (const el of document.querySelectorAll('[data-i18n]')) {
+    el.textContent = t(el.dataset.i18n);
+  }
+  for (const el of document.querySelectorAll('[data-i18n-html]')) {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  }
+  // Seletor de idioma.
+  const sel = $('lang-sel');
+  for (const [code, loc] of Object.entries(LOCALES)) {
+    const o = document.createElement('option');
+    o.value = code;
+    o.textContent = loc.native;
+    if (code === LANG) o.selected = true;
+    sel.appendChild(o);
+  }
+  sel.addEventListener('change', () => switchLocale(sel.value));
+}
+applyI18n();
 
 // ---------------------------------------------------------------------------
 // Infra de gráficos: registro para redesenho em resize + tooltip único
@@ -68,9 +117,7 @@ function legendHTML(items) {
   return items.map(([kind, color, label]) => {
     const sw = kind === 'bar'
       ? `<span class="sw sw-bar" style="background:${color}"></span>`
-      : kind === 'dash'
-        ? `<span class="sw sw-dash" style="background:${color}"></span>`
-        : `<span class="sw sw-dot" style="border-color:${color}"></span>`;
+      : `<span class="sw sw-dash" style="background:${color}"></span>`;
     return `<span class="lg-item">${sw}${label}</span>`;
   }).join('');
 }
@@ -92,14 +139,14 @@ function qubitDraw() {
   const phases = qubit.re.map((r, i) => Math.atan2(qubit.im[i], r));
   chart($('q-canvas'),
     (cv) => drawHistogram(cv, { values: mags, phases, labels: ['|0⟩', '|1⟩'], maxY: 1.1 }),
-    (i) => `|${i}⟩ &nbsp; amplitude ${mags[i].toFixed(3)} &nbsp; fase ${phases[i].toFixed(2)} rad<br>probabilidade ${(mags[i] ** 2 * 100).toFixed(1)}%`);
-  const states = ['|0⟩', '(|0⟩ + |1⟩)/√2 — os dois ao mesmo tempo'];
-  $('q-state').textContent = states[qubit.hops % 2];
+    (i) => t('q.tip', {
+      i, amp: mags[i].toFixed(3), ph: phases[i].toFixed(2),
+      prob: fmtP(mags[i] ** 2),
+    }));
+  $('q-state').textContent = qubit.hops % 2 === 1 ? t('q.state1') : '|0⟩';
   $('q-caption').textContent = qubit.hops % 2 === 1
-    ? 'Depois de um H: duas setas de mesmo tamanho — 50% para cada lado se você medir agora.'
-    : qubit.hops === 0
-      ? 'Amplitudes do qubit — altura = |amplitude|, cor = fase.'
-      : 'H de novo: o caminho até |1⟩ veio duas vezes com sinais opostos e se cancelou. De volta a |0⟩ — determinístico.';
+    ? t('q.cap1')
+    : qubit.hops === 0 ? t('q.cap0') : t('q.cap2');
 }
 
 $('q-h').addEventListener('click', () => {
@@ -121,22 +168,15 @@ qubitDraw();
 // Capítulo 2 — espaço de Hilbert
 // ---------------------------------------------------------------------------
 
-const HILBERT_MARKS = [
-  [10, 'mais de mil dimensões'],
-  [20, 'mais de um milhão'],
-  [30, 'mais de um bilhão'],
-  [33, 'mais dimensões que pessoas na Terra'],
-  [38, 'mais que estrelas na Via Láctea'],
-  [50, 'mais que todas as páginas web indexadas'],
-  [60, 'quase tantas quanto grãos de areia em todas as praias do planeta'],
-];
+const HILBERT_MARKS = [[10, 'hil.m10'], [20, 'hil.m20'], [30, 'hil.m30'],
+  [33, 'hil.m33'], [38, 'hil.m38'], [50, 'hil.m50'], [60, 'hil.m60']];
 
 function hilbertDraw() {
   const n = Number($('hilbert-n').value);
   let note = '';
-  for (const [lim, txt] of HILBERT_MARKS) if (n >= lim) note = txt;
+  for (const [lim, key] of HILBERT_MARKS) if (n >= lim) note = t(key);
   $('hilbert-read').innerHTML =
-    `<b>${n}</b> qubit${n > 1 ? 's' : ''} → <b>2<sup>${n}</sup> = ${fmtBig(n)}</b> dimensões` +
+    (n === 1 ? t('hil.read1') : t('hil.read', { n, dims: fmtBig(n) })) +
     (note ? `<br><span class="dim-note">${note}</span>` : '');
   chart($('hilbert-canvas'), (cv) => {
     const w = cv.getBoundingClientRect().width - 52;
@@ -164,7 +204,7 @@ hilbertDraw();
       values: vals, maxY: 15,
       labels: Array.from({ length: xs }, (_, x) => x),
     }),
-    (i) => `7<sup>${i}</sup> mod 15 = <b>${vals[i]}</b>`);
+    (i) => t('per.tip', { x: i, v: vals[i] }));
 }
 
 // ---------------------------------------------------------------------------
@@ -184,10 +224,14 @@ function baseWorks(N, a, r) {
   return factorsFromPeriod({ N, a }, r).ok;
 }
 
+function errText(err) {
+  return err ? t(`err.${err.code}`, { p: err.p ?? '' }) : '';
+}
+
 function refreshBases() {
   const N = Number($('sim-n').value);
   const err = validateN(N);
-  $('sim-err').textContent = err ?? '';
+  $('sim-err').textContent = errText(err);
   const sel = $('sim-a');
   sel.replaceChildren();
   if (err) return;
@@ -195,7 +239,7 @@ function refreshBases() {
   for (const { a, r } of bases) {
     const o = document.createElement('option');
     o.value = String(a);
-    o.textContent = baseWorks(N, a, r) ? `a = ${a}` : `a = ${a} (base ruim)`;
+    o.textContent = baseWorks(N, a, r) ? `a = ${a}` : t('alg.badBase', { a });
     sel.appendChild(o);
   }
   // Padrão: o clássico a=7 para 15; senão uma base que funciona.
@@ -212,44 +256,50 @@ let simFirstRun = true;
 function runShor() {
   const N = Number($('sim-n').value);
   const err = validateN(N);
-  if (err) { $('sim-err').textContent = err; return; }
+  if (err) { $('sim-err').textContent = errText(err); return; }
   const a = Number($('sim-a').value);
   const inst = prepare(N, a);
   const fs = finalState(inst);
   const { good, f1, f2 } = goodShots(N, a, inst.M);
 
   $('sim-body').classList.remove('hidden');
-  $('sim-regs').innerHTML =
-    `${inst.m} qubits de contagem + ${inst.nWork} de trabalho — seu navegador acabou de calcular ` +
-    `exatamente as <b>2<sup>${inst.m + inst.nWork}</sup> = ${fmt(inst.dim)} dimensões</b> deste espaço de Hilbert`;
-  circuitSVG($('sim-circuit'), inst);
+  $('sim-regs').innerHTML = t('alg.regs', {
+    m: inst.m, n: inst.nWork, mn: inst.m + inst.nWork, dims: fmt(inst.dim),
+  });
+  circuitSVG($('sim-circuit'), inst, {
+    counting: t('circ.counting', { m: inst.m }),
+    work: t('circ.work', { n: inst.nWork }),
+    aria: t('circ.aria', { m: inst.m }),
+  });
 
   // O gráfico: o que o computador quântico devolve.
   const drawDist = (winK) => {
     $('sim-legend').innerHTML = legendHTML([
-      ['bar', SERIES.measured, 'chance de cada k sair na medição'],
-      ...(winK != null ? [['dash', SERIES.accent, `k = ${winK} — a medição que fatorou`]] : []),
+      ['bar', SERIES.measured, t('leg.chance')],
+      ...(winK != null ? [['dash', SERIES.accent, t('leg.win', { k: winK })]] : []),
     ]);
     chart($('sim-canvas'), (c) => drawHistogram(c, {
       values: fs.probs, percent: true, uniform: true,
       highlight: winK ?? null,
-    }), (k) => `k = ${k}<br>chance: ${fmtP(fs.probs[k])}<br>${good.has(k) ? '✓ este k entrega os fatores' : '— este k não fatora sozinho'}`);
+    }), (k) => t('tip.k', {
+      k, p: fmtP(fs.probs[k]),
+      good: good.has(k) ? t('tip.good') : t('tip.bad'),
+    }));
     const top = [...fs.probs].map((p, k) => [k, p]).sort((x, y) => y[1] - x[1])
       .slice(0, 24).sort((x, y) => x[0] - y[0]);
     $('sim-table').innerHTML = tableHTML(
-      top.map(([k, p]) => [k, fmtP(p), good.has(k) ? `✓ leva a ${f1} × ${f2}` : '—']),
-      ['k', 'chance', 'fatora?']);
+      top.map(([k, p]) => [k, fmtP(p), good.has(k) ? t('tbl.leads', { f1, f2 }) : '—']),
+      [t('tbl.k'), t('tbl.chance'), t('tbl.factors')]);
   };
 
   // Base que nunca fatora: diz na cara, sem fingir que mede.
   if (good.size === 0) {
     drawDist(null);
-    const why = factorsFromPeriod(inst, inst.r).why;
+    const why = t(`fr.${factorsFromPeriod(inst, inst.r).code}`, { r: inst.r });
     $('sim-result').innerHTML = `
       <div class="verdict verdict-bad">
-        <div class="v-big">essa base nunca fatora ✗</div>
-        <div class="v-sub">${why}. No Shor real isso acontece com parte das
-        bases — sorteia-se outra e pronto. Troque o <b>a</b> acima e rode de novo.</div>
+        <div class="v-big">${t('v.badbase.title')}</div>
+        <div class="v-sub">${t('v.badbase.sub', { why })}</div>
       </div>`;
     return;
   }
@@ -257,7 +307,7 @@ function runShor() {
   // Mede sozinho até cair num k bom (30 é teto de segurança).
   const attempts = [];
   let win = null;
-  for (let t = 0; t < 30 && win == null; t++) {
+  for (let tRun = 0; tRun < 30 && win == null; tRun++) {
     const k = sampleK(fs.probs);
     attempts.push(k);
     if (good.has(k)) win = k;
@@ -267,40 +317,35 @@ function runShor() {
   if (win == null) {
     $('sim-result').innerHTML = `
       <div class="verdict verdict-bad">
-        <div class="v-big">azar estatístico raríssimo ✗</div>
-        <div class="v-sub">30 medições sem um k bom — rode de novo.</div>
+        <div class="v-big">${t('v.unlucky.title')}</div>
+        <div class="v-sub">${t('v.unlucky.sub')}</div>
       </div>
-      <p class="controls"><button id="sim-rerun" class="btn small ghost">rodar de novo</button></p>`;
+      <p class="controls"><button id="sim-rerun" class="btn small ghost">${t('alg.rerun')}</button></p>`;
     $('sim-rerun').addEventListener('click', runShor);
     return;
   }
 
   const tries = attempts.length;
   const cf = continuedFractions(win, inst.M, inst);
-  const hi = halfInfo(N, a, cf.r);
-  const pGood = [...good].reduce((s, k) => s + fs.probs[k], 0);
+  const expr = halfExpr(N, a, cf.r);
+  const pGood = [...good].reduce((s2, k) => s2 + fs.probs[k], 0);
   const s0 = Math.round((win * cf.r) / inst.M);
+  const cfRows = cf.steps.map(({ p, q, status }) => [`${p}/${q}`,
+    status === 'period' ? t('how.cfYes', { q, N })
+      : status === 'overflow' ? t('how.cfOver', { q, N }) : t('how.cfNo', { q, N })]);
+  const subKey = tries === 1 ? 'v.ok.first' : 'v.ok.nth';
   $('sim-result').innerHTML = `
     <div class="verdict verdict-ok">
       <div class="v-big">${N} = ${f1} × ${f2}</div>
-      <div class="v-sub">✓ ${tries === 1
-        ? 'fatorado na primeira medição'
-        : `fatorado na ${tries}ª medição (saíram k = ${attempts.join(', ')})`}
-        — k = ${win} revelou o período r = ${cf.r}, e dois mdc fecharam a conta</div>
+      <div class="v-sub">${t(subKey, { tries, ks: attempts.join(', '), win, r: cf.r })}</div>
     </div>
-    <details class="how"><summary>ver a conta: de k = ${win} aos fatores ${f1} × ${f2}</summary>
-      <p class="fine">A medição deu k = ${win}, ou seja, k/M = ${win}/${inst.M} ≈ ${s0}/${cf.r}.
-      As frações continuadas acham essa fração simples, e o denominador é o período:</p>
-      ${tableHTML(cf.steps.map(({ p, q, verdict }) => [`${p}/${q}`, verdict]),
-        ['convergente p/q', 'q é o período?'])}
-      <p class="fine">Com r = ${cf.r}: ${hi.expr}, e mdc(${hi.half} − 1, ${N}) e
-      mdc(${hi.half} + 1, ${N}) dão <b>${f1}</b> e <b>${f2}</b>. A conta final é 100%
-      clássica — o quantum serviu só para achar o período.</p>
-      ${tries > 1 ? `<p class="fine">As medições anteriores caíram em k que não fatora
-      sozinho (k = 0 não diz nada; outros simplificam para a fração errada) — normal:
-      aqui ${fmtP(pGood)} das medições servem, e basta uma.</p>` : ''}
+    <details class="how"><summary>${t('how.summary', { win, f1, f2 })}</summary>
+      <p class="fine">${t('how.p1', { win, M: inst.M, s0, r: cf.r })}</p>
+      ${tableHTML(cfRows, [t('how.cfHead1'), t('how.cfHead2')])}
+      <p class="fine">${t('how.p2', { r: cf.r, expr: expr.text, half: expr.half, N, f1, f2 })}</p>
+      ${tries > 1 ? `<p class="fine">${t('how.p3', { pGood: fmtP(pGood) })}</p>` : ''}
     </details>
-    <p class="controls"><button id="sim-rerun" class="btn small ghost">rodar de novo</button></p>`;
+    <p class="controls"><button id="sim-rerun" class="btn small ghost">${t('alg.rerun')}</button></p>`;
   $('sim-rerun').addEventListener('click', runShor);
 
   if (simFirstRun) {
@@ -344,14 +389,14 @@ function goodShots(N, a, M) {
 
 /** A "raiz quadrada útil" de a^r mod N — com o truque b^r quando r é ímpar
  * e a = b² (o caso clássico de N=21 com a=4). */
-function halfInfo(N, a, r) {
+function halfExpr(N, a, r) {
   if (r % 2 === 0) {
     const half = modpow(a, r / 2, N);
-    return { half, expr: `${a}<sup>${r / 2}</sup> mod ${N} = ${half}` };
+    return { half, text: t('expr.even', { a, rh: r / 2, N, half }) };
   }
   const b = Math.round(Math.sqrt(a));
   const half = modpow(b, r, N);
-  return { half, expr: `${a} = ${b}², então √(${a}<sup>${r}</sup>) = ${b}<sup>${r}</sup> mod ${N} = ${half}` };
+  return { half, text: t('expr.odd', { a, b, r, N, half }) };
 }
 
 /** O parágrafo que faltava nos cards: por que ESTES picos viram os fatores. */
@@ -362,20 +407,15 @@ function explainPeaks(c, M, good, f1, f2, drowned = false) {
   const stepStr = Number.isInteger(M / r) ? String(M / r) : `${M}/${r} ≈ ${(M / r).toFixed(2)}`;
   const g0 = Math.min(...good);
   const s0 = Math.round((g0 * r) / M);
-  const hi = halfInfo(N, a, r);
-  const bads = peaks.filter((k) => !good.has(k));
-  const opening = drowned
-    ? `sem ruído, o circuito devolveria um k perto de múltiplo de ${stepStr} — os
-       traços violeta em k = ${peaks.join(', ')} mostram onde os picos deveriam estar`
-    : `o circuito devolve um k perto de múltiplo de ${stepStr} — por isso os picos
-       em k = ${peaks.join(', ')}`;
-  return `<p class="fine hw-why"><b>${drowned ? 'Como o gráfico DEVERIA virar fatores' : 'Do gráfico aos fatores'}:</b>
-    ${opening}. Um k bom vira fração e entrega o período: k = ${g0} → ${g0}/${M} ≈ ${s0}/${r},
-    e o denominador é o período <b>r = ${r}</b>. Do período aos fatores:
-    ${hi.expr}, e mdc(${hi.half} − 1, ${N}) e mdc(${hi.half} + 1, ${N}) dão
-    <b>${f1}</b> e <b>${f2}</b>. Já ${bads.length > 1 ? `os picos k = ${bads.join(' e k = ')} não servem sozinhos` : `o pico k = ${bads[0]} não serve sozinho`}
-    (0 não diz nada; os outros simplificam para uma fração de denominador errado) —
-    por isso se mede mais de uma vez e basta UMA medição boa.</p>`;
+  const expr = halfExpr(N, a, r);
+  const badsArr = peaks.filter((k) => !good.has(k));
+  const bads = t(badsArr.length > 1 ? 'exp.badsMany' : 'exp.badsOne',
+    { ks: badsArr.join(', k = ') });
+  const open = t(drowned ? 'exp.openDrowned' : 'exp.open',
+    { step: stepStr, peaks: peaks.join(', ') });
+  return `<p class="fine hw-why"><b>${t(drowned ? 'exp.titleDrowned' : 'exp.title')}:</b> ` +
+    t('exp.body', { open, g0, M, s0, r, expr: expr.text, half: expr.half, N, f1, f2, bads }) +
+    '</p>';
 }
 
 async function loadHardware() {
@@ -383,7 +423,7 @@ async function loadHardware() {
   try {
     meta = await (await fetch('data/circuits.json')).json();
   } catch {
-    $('hw-status').textContent = 'não consegui carregar os metadados dos circuitos.';
+    $('hw-status').textContent = '…';
     return;
   }
 
@@ -396,9 +436,9 @@ async function loadHardware() {
   } catch { /* preview local sem Worker: segue sem dados reais */ }
 
   $('hw-status').innerHTML = run
-    ? `última rodada: <b>${run.backend}</b> · job <span class="mono">${run.job_id}</span> · ${run.completed_at} UTC` +
-      (run.charged_seconds ? ` · ${run.charged_seconds}s de QPU cobrados` : '')
-    : 'ainda sem rodada no hardware — mostrando as distribuições ideais de cada circuito.';
+    ? t('hw.status.run', { backend: run.backend, job: run.job_id, date: run.completed_at }) +
+      (run.charged_seconds ? t('hw.status.charged', { s: run.charged_seconds }) : '')
+    : t('hw.status.none');
 
   const byId = Object.fromEntries((run?.results ?? []).map((x) => [x.id, x]));
   const cards = $('hw-cards');
@@ -414,21 +454,22 @@ async function loadHardware() {
     card.className = 'panel hw-card';
     card.innerHTML = `
       <div class="hw-head">
-        <h3>${c.title}</h3>
-        <span class="chip ${c.kind === 'generico' ? 'chip-warn' : ''}">${c.kind}</span>
+        <h3>${t(`hw.c.${c.id}.title`)}</h3>
+        <span class="chip">${t(`hw.kind.${c.kind}`)}</span>
       </div>
-      <p class="fine">${c.note}</p>
-      <p class="hw-stats mono">N=${c.N} · a=${c.a} · ${c.logical_qubits} qubits ·
-        profundidade ${fmt(st.depth)} · <b>${fmt(st.twoq_gates)} portas de 2 qubits</b> ·
-        ${fmt(c.shots)} shots</p>
+      <p class="fine">${t(`hw.c.${c.id}.note`)}</p>
+      <p class="hw-stats mono">${t('hw.stats', {
+        N: c.N, a: c.a, q: c.logical_qubits, depth: fmt(st.depth),
+        twoq: fmt(st.twoq_gates), shots: fmt(c.shots),
+      })}</p>
       <div class="legend">${legendHTML([
-        ...(res ? [['bar', SERIES.measured, 'medido na QPU']] : []),
-        ['dash', SERIES.ideal, 'ideal (sem ruído)'],
-        ['dash', SERIES.axis, 'uniforme = ruído puro'],
+        ...(res ? [['bar', SERIES.measured, t('hw.leg.measured')]] : []),
+        ['dash', SERIES.ideal, t('hw.leg.ideal')],
+        ['dash', SERIES.axis, t('hw.leg.uniform')],
       ])}</div>
       <canvas class="viz" height="200"></canvas>
       <div class="hw-concl"></div>
-      <details class="tbl-details"><summary>ver como tabela</summary><div class="hw-tbl"></div></details>`;
+      <details class="tbl-details"><summary>${t('tbl.view')}</summary><div class="hw-tbl"></div></details>`;
     cards.appendChild(card);
 
     const cv = card.querySelector('canvas');
@@ -443,8 +484,8 @@ async function loadHardware() {
       uniform: true, percent: true,
     }), (k) => {
       const parts = [`k = ${k}`];
-      if (res) parts.push(`medido: ${((values[k] ?? 0) * 100).toFixed(1)}% (${res.counts[k] ?? 0}/${res.shots})`);
-      parts.push(`ideal: ${((idealNum[k] ?? 0) * 100).toFixed(1)}%`);
+      if (res) parts.push(t('hw.tip.meas', { pct: fmtP(values[k] ?? 0), n: res.counts[k] ?? 0, shots: res.shots }));
+      parts.push(t('hw.tip.ideal', { pct: fmtP(idealNum[k] ?? 0) }));
       return parts.join('<br>');
     });
 
@@ -459,20 +500,15 @@ async function loadHardware() {
       const frac = hit / res.shots;
       drowned = frac <= chance * 1.5;
       if (!drowned) {
-        concl.innerHTML = `<div class="hw-verdict ok"><b>→ ${c.N} = ${f1} × ${f2}</b>
-          <span>${fmt(hit)} dos ${fmt(res.shots)} shots (${fmtP(frac)}) caíram num k que,
-          sozinho, entrega os fatores via frações continuadas + mdc — um chute cego
-          acertaria ${fmtP(chance)}. Basta UMA medição boa, e aqui quase metade serve.</span></div>`;
+        concl.innerHTML = `<div class="hw-verdict ok"><b>${t('hw.ok.title', { N: c.N, f1, f2 })}</b>
+          <span>${t('hw.ok.sub', { hit: fmt(hit), shots: fmt(res.shots), pct: fmtP(frac), chance: fmtP(chance) })}</span></div>`;
       } else {
-        concl.innerHTML = `<div class="hw-verdict bad"><b>→ os fatores NÃO saem daqui</b>
-          <span>só ${fmtP(frac)} dos shots caíram em k "bom" — praticamente igual ao
-          chute cego (${fmtP(chance)}). O circuito afogou no ruído antes de computar:
-          este histograma não sabe que ${c.N} = ${f1} × ${f2}.</span></div>`;
+        concl.innerHTML = `<div class="hw-verdict bad"><b>${t('hw.bad.title')}</b>
+          <span>${t('hw.bad.sub', { pct: fmtP(frac), chance: fmtP(chance), N: c.N, f1, f2 })}</span></div>`;
       }
     } else {
-      const idealHit = [...good].reduce((s, k) => s + (idealNum[k] ?? 0), 0);
-      concl.innerHTML = `<p class="fine">no ideal, ${fmtP(idealHit)} das medições
-        levariam direto aos fatores ${f1} × ${f2}.</p>`;
+      const idealHit = [...good].reduce((s2, k) => s2 + (idealNum[k] ?? 0), 0);
+      concl.innerHTML = `<p class="fine">${t('hw.idealOnly', { pct: fmtP(idealHit), f1, f2 })}</p>`;
     }
     concl.innerHTML += explainPeaks(c, M, good, f1, f2, drowned);
 
@@ -481,11 +517,12 @@ async function loadHardware() {
       const mv = res ? (values[k] ?? 0) : null;
       const iv = idealNum[k] ?? 0;
       if ((mv ?? 0) > 0 || iv > 0) {
-        rows.push([k, mv != null ? (mv * 100).toFixed(2) + '%' : '—', (iv * 100).toFixed(2) + '%',
-          good.has(k) ? `✓ leva a ${f1} × ${f2}` : '—']);
+        rows.push([k, mv != null ? fmtP(mv) : '—', fmtP(iv),
+          good.has(k) ? t('tbl.leads', { f1, f2 }) : '—']);
       }
     }
-    card.querySelector('.hw-tbl').innerHTML = tableHTML(rows, ['k', 'medido', 'ideal', 'fatora?']);
+    card.querySelector('.hw-tbl').innerHTML =
+      tableHTML(rows, [t('tbl.k'), t('hw.tbl.meas'), t('hw.tbl.ideal'), t('tbl.factors')]);
   }
 }
 loadHardware();

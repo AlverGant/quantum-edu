@@ -6,7 +6,11 @@ algorithm end to end — superposition, Hilbert space, interference,
 measurement — with an **exact** in-browser simulation, and the same circuits
 executed on real IBM Quantum hardware (Heron, 156 qubits).
 
-**Live at:** https://quantum.vynstream.com (site content in Portuguese)
+**Live at:** https://quantum.vynstream.com — in the world's 8 most spoken
+languages (en, zh, hi, es, ar, pt, fr, ru; Arabic fully RTL), the same set
+as sorteio-quantico. Strings live in `web/i18n/<lang>.js` (135 keys each,
+checked for key/placeholder parity); `web/i18n.js` picks `?lang=` >
+localStorage > browser language > English, with a manual switcher in the nav.
 
 ```
 circuits/  offline circuit generator (Qiskit): validates against theory and
