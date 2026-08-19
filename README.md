@@ -32,13 +32,15 @@ together in one weekly job:
 |---|---|---|---|
 | `shor15_compilado` | 7 | 83 | N=15, a=7 via bit tricks (×8 = rotation, ×7 = rotation+NOT) → visible peaks |
 | `shor21_orbita` | 5 | 39 | N=21, a=4, orbit {1,4,16} compressed into 2 qubits → r=3 ∤ 8, continued fractions required |
-| `shor15_generico` | 14 | 12,428 | the SAME N=15 via Beauregard's generic construction (quant-ph/0205095) → drowns in noise |
+| `shor35_orbita` | 5 | 26 | N=35, a=8, orbit {1,8,29,22} in 2 qubits → r=4, clean peaks, 35 = 5 × 7 |
 
-The compiled × generic contrast (83 vs 12,428 gates for the same
-factorization) is the site's central lesson: nearly every "quantum
-factorization" ever demonstrated used shortcuts built from prior knowledge of
-the answer (the classic critique: Smolin et al., arXiv:1301.7007), and the
-real frontier is error correction, not qubit count.
+All three are compiled shortcuts — like every "quantum factorization" ever
+demonstrated (the classic critique: Smolin et al., arXiv:1301.7007). As a
+control, run 1 (job `da2jovuaa69c739hjfeg`) also executed Beauregard's
+generic N=15 circuit (14 qubits, 12,428 2q gates, builder still in
+`build_circuits.py`): it drowned in noise exactly as predicted — 14% of
+shots on useful k vs 13% blind chance. The site tells that story in prose;
+the real frontier is error correction, not qubit count.
 
 ## Circuits: regenerating
 
@@ -72,9 +74,9 @@ submitted  ──▶ polling; on completion: aggregate counts into shor_runs ─
 
 The IBM instance is the SAME one used by sorteio-quantico: **10 min/month
 shared** (Open plan). The sorteio harvest uses ~300 s/month. One run here
-costs ~10–15 charged seconds (the generic circuit dominates: depth ~26,600);
-weekly ≈ 60 s/month. If it gets tight, raise `RUN_PERIOD_DAYS` or drop the
-generic circuit from the PUBs.
+costs ~4–7 charged seconds (all three circuits are shallow; run 1, which
+still carried the deep generic control, cost 7 s); weekly ≈ 30 s/month. If
+it gets tight, raise `RUN_PERIOD_DAYS`.
 
 ### API
 

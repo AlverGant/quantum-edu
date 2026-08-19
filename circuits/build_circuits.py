@@ -151,7 +151,46 @@ def shor21_orbita() -> QuantumCircuit:
 
 
 # ---------------------------------------------------------------------------
+# shor35_orbita — órbita {1, 8, 29, 22} comprimida em 2 qubits
+# ---------------------------------------------------------------------------
+
+def shor35_orbita() -> QuantumCircuit:
+    """3 qubits de contagem + 2 de trabalho. a=8, r=4.
+
+    |00>=1, |01>=8, |10>=29, |11>=22. U = x*8 é o 4-ciclo (incremento mod 4);
+    U^2 troca os pares; U^4 = identidade. r=4 divide 8: picos limpos em
+    0, 2, 4, 6 — e r par dispensa truque: 8^2 = 29, mdc(29∓1, 35) = 7 e 5.
+    """
+    m = 3
+    c = QuantumRegister(m, "c")
+    w = QuantumRegister(2, "w")
+    meas = ClassicalRegister(m, "meas")
+    qc = QuantumCircuit(c, w, meas)
+
+    qc.h(c)
+
+    perm = np.zeros((4, 4))
+    for src, dst in [(0, 1), (1, 2), (2, 3), (3, 0)]:
+        perm[dst, src] = 1.0
+    u = UnitaryGate(perm, label="x8")
+    u2 = UnitaryGate(perm @ perm, label="x29")
+
+    qc.append(u.control(1), [c[0], w[0], w[1]])
+    qc.append(u2.control(1), [c[1], w[0], w[1]])
+    # c2 controla U^4 = identidade — nada a fazer.
+
+    qc.append(_iqft_gate(m), c)
+    qc.measure(c, meas)
+    return qc
+
+
+# ---------------------------------------------------------------------------
 # shor15_generico — Beauregard (quant-ph/0205095)
+#
+# Mantido como EXPERIMENTO DE CONTROLE, fora da rotação semanal desde a
+# rodada 1 (job da2jovuaa69c739hjfeg, ibm_fez, 2026-08-19): 12.428 portas de
+# 2 qubits devolveram 14% de shots "bons" contra 13% do acaso — afogou no
+# ruído exatamente como previsto. O site conta essa história em texto.
 # ---------------------------------------------------------------------------
 #
 # Registradores:
@@ -339,12 +378,12 @@ def main() -> None:
             "note": "Registrador de trabalho reduzido à órbita {1,4,16} — 2 qubits. r=3 não divide 8: frações continuadas obrigatórias.",
         },
         {
-            "id": "shor15_generico",
-            "title": "N=15, circuito genérico (Beauregard)",
-            "N": 15, "a": 7, "r": 4, "shots": 2048,
-            "kind": "generico",
-            "build": shor15_generico,
-            "note": "Mesma fatoração, zero atalhos: somadores de Fourier, adição modular, des-cômputo. É o que uma fatoração cega exige.",
+            "id": "shor35_orbita",
+            "title": "N=35, órbita comprimida",
+            "N": 35, "a": 8, "r": 4, "shots": 4096,
+            "kind": "compilado",
+            "build": shor35_orbita,
+            "note": "A órbita {1, 8, 29, 22} cabe em 2 qubits. r=4 divide 8: picos limpos — e 35 = 5 × 7 sai do hardware.",
         },
     ]
 

@@ -36,10 +36,10 @@ test('circuitos gerados: ideal soma 1 e QASM presente por backend', () => {
   }
 });
 
-test('os três papéis pedagógicos: raso, raso, fundo', () => {
+test('os três circuitos da rotação são rasos o bastante para ter picos', () => {
   const byId = Object.fromEntries(CIRCUITS.map((c) => [c.id, c]));
   const twoq = (id) => Object.values(byId[id].backends)[0].twoq_gates;
   assert.ok(twoq('shor15_compilado') < 200, 'compilado deveria ser raso');
-  assert.ok(twoq('shor21_orbita') < 200, 'órbita deveria ser rasa');
-  assert.ok(twoq('shor15_generico') > 5000, 'genérico deveria ser fundo');
+  assert.ok(twoq('shor21_orbita') < 200, 'órbita 21 deveria ser rasa');
+  assert.ok(twoq('shor35_orbita') < 200, 'órbita 35 deveria ser rasa');
 });

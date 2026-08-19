@@ -205,21 +205,22 @@
   <p id="hw-status" class="fine center"></p>
   <div id="hw-cards"></div>
   <div class="panel prose">
-    <h3>Por que o circuito genérico afoga — e por que isso importa</h3>
+    <h3>E um circuito sem atalhos? Afoga — nós testamos</h3>
     <p>
-      Cada porta de 2 qubits do processador acerta ~99,7% das vezes. Parece
-      muito, mas fidelidades se multiplicam: com 83 portas
-      (0,997<sup>83</sup> ≈ 78%) os picos sobrevivem; com ~12&nbsp;400
-      (0,997<sup>12400</sup> ≈ 10<sup>−17</sup>) o que sai é uniforme — ruído
-      puro, indistinguível de um dado de 16 faces.
+      Os três circuitos acima são <b>compilados</b>: usam a estrutura de cada
+      N para caber no hardware de hoje — como toda "fatoração quântica" já
+      demonstrada. Para medir o tamanho dessa concessão, rodamos como controle
+      o circuito <b>genérico</b> de Beauregard para o mesmo N=15, o que uma
+      fatoração cega exigiria: 14 qubits e <b>12.428 portas de 2 qubits</b>.
     </p>
     <p>
-      E aqui mora uma lição de honestidade científica: quase toda
-      "fatoração quântica" já demonstrada usou circuitos <b>compilados</b>,
-      encolhidos com conhecimento prévio da resposta — como os dois primeiros
-      acima. O circuito <b>genérico</b>, o único que contaria numa fatoração
-      cega, ainda não sobrevive ao ruído nem para N=15. É por isso que a
-      fronteira real da área não é "quantos qubits", e sim <b>correção de
+      Cada porta acerta ~99,7% das vezes, e fidelidades se multiplicam: com 83
+      portas (0,997<sup>83</sup> ≈ 78%) os picos ficam de pé; com 12.428
+      (0,997<sup>12428</sup> ≈ 10<sup>−17</sup>) sobra ruído puro. Foi o que o
+      hardware devolveu: <b>14% dos shots em k "bom", contra 13% do chute
+      cego</b> — um histograma chapado que não sabe que 15 = 3 × 5 (job
+      <span class="mono">da2jovuaa69c739hjfeg</span>, ibm_fez). É por isso que
+      a fronteira real da área não é "quantos qubits", e sim <b>correção de
       erros</b>: transformar milhares de qubits físicos ruidosos em alguns
       qubits lógicos quase perfeitos.
     </p>
@@ -267,7 +268,7 @@
       distribuição teórica, transpilados offline para as portas nativas do
       Heron (cz, rz, sx, x) e submetidos por um Cloudflare Worker via API REST
       da IBM Quantum — plano Open, 10 minutos de QPU por mês, compartilhados
-      com o Sorteio Quântico. O circuito genérico segue S.&nbsp;Beauregard,
+      com o Sorteio Quântico. O experimento de controle genérico segue S.&nbsp;Beauregard,
       <i>Circuit for Shor's algorithm using 2n+3 qubits</i>
       (quant-ph/0205095); o experimento de referência sobre fatorar 15, 21 e
       35 em hardware IBM é Amico, Saleem &amp; Kumph (arXiv:1903.00768); a

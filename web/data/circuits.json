@@ -74,37 +74,37 @@
   }
  },
  {
-  "id": "shor15_generico",
-  "title": "N=15, circuito genérico (Beauregard)",
-  "N": 15,
-  "a": 7,
+  "id": "shor35_orbita",
+  "title": "N=35, órbita comprimida",
+  "N": 35,
+  "a": 8,
   "r": 4,
-  "kind": "generico",
-  "note": "Mesma fatoração, zero atalhos: somadores de Fourier, adição modular, des-cômputo. É o que uma fatoração cega exige.",
-  "counting_qubits": 4,
-  "logical_qubits": 14,
-  "shots": 2048,
+  "kind": "compilado",
+  "note": "A órbita {1, 8, 29, 22} cabe em 2 qubits. r=4 divide 8: picos limpos — e 35 = 5 × 7 sai do hardware.",
+  "counting_qubits": 3,
+  "logical_qubits": 5,
+  "shots": 4096,
   "ideal": {
    "0": 0.25,
+   "2": 0.25,
    "4": 0.25,
-   "8": 0.25,
-   "12": 0.25
+   "6": 0.25
   },
   "backends": {
    "ibm_marrakesh": {
-    "depth": 26637,
-    "twoq_gates": 12428,
-    "total_gates": 52827
+    "depth": 82,
+    "twoq_gates": 26,
+    "total_gates": 127
    },
    "ibm_fez": {
-    "depth": 26653,
-    "twoq_gates": 12428,
-    "total_gates": 52870
+    "depth": 81,
+    "twoq_gates": 26,
+    "total_gates": 129
    },
    "ibm_kingston": {
-    "depth": 26645,
-    "twoq_gates": 12428,
-    "total_gates": 52846
+    "depth": 81,
+    "twoq_gates": 26,
+    "total_gates": 129
    }
   }
  }
