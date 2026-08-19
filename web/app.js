@@ -53,6 +53,17 @@ function applyI18n() {
   document.documentElement.dir = LOCALES[LANG].dir;
   document.title = t('meta.title');
   document.querySelector('meta[name="description"]')?.setAttribute('content', t('meta.desc'));
+  // Canônica auto-referente: cada variante ?lang= é sua própria canônica
+  // (com hreflang apontando as irmãs); a raiz fica limpa como x-default.
+  let canon = document.querySelector('link[rel="canonical"]');
+  if (!canon) {
+    canon = document.createElement('link');
+    canon.rel = 'canonical';
+    document.head.appendChild(canon);
+  }
+  const urlLang = new URL(location.href).searchParams.get('lang');
+  canon.href = 'https://quantum.vynstream.com/' +
+    (urlLang && LOCALES[urlLang] ? `?lang=${urlLang}` : '');
   for (const el of document.querySelectorAll('[data-i18n]')) {
     el.textContent = t(el.dataset.i18n);
   }
