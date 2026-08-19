@@ -1,0 +1,5 @@
+# Only needed to (re)generate the hardware circuits offline.
+# The Worker and the site run without Python.
+qiskit>=2.3.0
+qiskit-ibm-runtime>=0.49.0
+numpy

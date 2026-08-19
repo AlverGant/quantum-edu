@@ -1,0 +1,39 @@
+name = "quantum-edu"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+
+# O site inteiro sai do mesmo Worker: assets estáticos + API na mesma origem.
+[assets]
+directory = "../web"
+binding = "ASSETS"
+not_found_handling = "404-page"
+run_worker_first = ["/api/*"]
+
+# `custom_domain = true` cria o DNS e o certificado sozinho — exige que a
+# zona vynstream.com esteja nesta conta (a mesma do sorteio).
+[[routes]]
+pattern = "quantum.vynstream.com"
+custom_domain = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "quantum_edu"
+# Preencha com o id devolvido por: npx wrangler d1 create quantum_edu
+database_id = "PREENCHER"
+
+[triggers]
+# O cron só TOCA a máquina de estados; a periodicidade real da rodada vem de
+# RUN_PERIOD_DAYS. 5 minutos é para o polling do job em voo, não para abrir
+# jobs — só existe um em voo por vez (tabela shor_state).
+crons = ["*/5 * * * *"]
+
+[vars]
+# Dias entre rodadas no hardware real. Uma rodada custa ~10-15 s de QPU
+# cobrada; o plano Open dá 600 s/mês COMPARTILHADOS com o harvest do
+# sorteio-quantico (~300 s/mês) na mesma instância. Semanal ≈ 60 s/mês.
+RUN_PERIOD_DAYS = "7"
+
+# Secrets (npx wrangler secret put NOME):
+#   IBM_API_KEY  — chave de API do IBM Cloud (a mesma do sorteio)
+#   IBM_CRN      — CRN da instância IBM Quantum (o mesmo do sorteio)
+#   ADMIN_TOKEN  — autoriza POST /api/admin/run

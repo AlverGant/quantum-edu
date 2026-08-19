@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fatoração Quântica — o algoritmo de Shor ao vivo, do navegador ao hardware da IBM</title>
+<meta name="description" content="Veja o algoritmo de Shor fatorar um número de ponta a ponta: superposição, interferência, espaço de Hilbert e medição — simulado exatamente no seu navegador e executado num processador quântico real de 156 qubits da IBM.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%9B%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Fatoração Quântica">
+<meta property="og:description" content="O algoritmo de Shor de ponta a ponta: simulação exata no navegador + execução em hardware quântico real da IBM.">
+<meta property="og:type" content="website">
+</head>
+<body>
+
+<header class="top">
+  <nav class="nav">
+    <a class="brand" href="#">⚛ <b>Fatoração Quântica</b></a>
+    <div class="nav-links">
+      <a href="#qubit">Qubit</a>
+      <a href="#hilbert">Hilbert</a>
+      <a href="#interferencia">Interferência</a>
+      <a href="#periodo">Período</a>
+      <a href="#algoritmo">Algoritmo</a>
+      <a href="#hardware">Hardware real</a>
+      <a href="#cripto">E o RSA?</a>
+    </div>
+    <a class="nav-sib" href="https://sorteio.vynstream.com" title="projeto irmão">Sorteio Quântico ↗</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ======================================================== hero -->
+<section class="hero">
+  <h1>Fatore um número<br><span class="grad">com física</span></h1>
+  <p class="lead">
+    Esta página conta o algoritmo de <b>Shor</b> de ponta a ponta — superposição,
+    espaço de Hilbert, interferência, medição — com uma simulação <b>exata</b>
+    rodando aqui no seu navegador. E depois mostra o mesmo circuito executado
+    num <b>processador quântico real</b> da IBM, de 156 qubits, com os dados
+    crus da medição: os acertos e o ruído.
+  </p>
+  <p class="hero-cta">
+    <a class="btn" href="#algoritmo">Rodar o algoritmo agora</a>
+    <a class="btn ghost" href="#hardware">Ver o hardware real</a>
+  </p>
+  <p class="hero-note">
+    Projeto irmão do <a href="https://sorteio.vynstream.com">Sorteio Quântico</a> —
+    a mesma conta IBM Quantum, o mesmo gosto por provas verificáveis.
+  </p>
+</section>
+
+<!-- ======================================================== 1. qubit -->
+<section id="qubit" class="chapter">
+  <h2><span class="chap-n">1</span> O qubit: uma seta, não um interruptor</h2>
+  <div class="cols">
+    <div>
+      <p>
+        Um bit é um interruptor: 0 ou 1. Um <b>qubit</b> guarda uma
+        <b>amplitude</b> para cada valor — um número complexo, que desenhamos
+        como uma <b>seta</b> com comprimento e direção (a <b>fase</b>).
+        A probabilidade de medir um valor é o comprimento da seta ao quadrado.
+      </p>
+      <p>
+        A porta <b>H</b> (Hadamard) divide o caminho: leva |0⟩ para
+        <span class="math">(|0⟩ + |1⟩)/√2</span> — os dois valores ao mesmo
+        tempo, cada um com probabilidade ½.
+      </p>
+      <p>
+        O teste que separa isso de um sorteio clássico: aplique H <b>duas
+        vezes</b>. Uma moeda jogada duas vezes continua aleatória. O qubit
+        <b>volta certinho para |0⟩</b> — porque os dois caminhos que levariam a
+        |1⟩ chegam com setas opostas (+½ e −½) e se <b>cancelam</b>. Isso é
+        interferência, e é a alma de tudo que vem a seguir.
+      </p>
+      <div class="controls">
+        <button id="q-h" class="btn small">aplicar H</button>
+        <button id="q-reset" class="btn small ghost">reiniciar em |0⟩</button>
+        <span id="q-state" class="mono state-chip">|0⟩</span>
+      </div>
+    </div>
+    <figure class="panel">
+      <canvas id="q-canvas" class="viz" height="220"></canvas>
+      <figcaption id="q-caption">Amplitudes do qubit — altura = |amplitude|, cor = fase.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================== 2. hilbert -->
+<section id="hilbert" class="chapter">
+  <h2><span class="chap-n">2</span> O espaço de Hilbert: onde a conta acontece</h2>
+  <div class="cols">
+    <div>
+      <p>
+        Com <i>n</i> qubits, o estado é uma lista de <b>2<sup>n</sup></b>
+        amplitudes — uma seta para cada combinação de bits. Esse espaço vetorial
+        gigante é o <b>espaço de Hilbert</b> do sistema, e cresce
+        <b>exponencialmente</b>: cada qubit novo <i>dobra</i> a lista.
+      </p>
+      <p id="hilbert-read" class="big-read"></p>
+      <input id="hilbert-n" class="slider" type="range" min="1" max="60" value="18" aria-label="número de qubits">
+      <p class="fine">
+        O detalhe que todo texto de divulgação erra: ter 2<sup>n</sup>
+        amplitudes <b>não</b> é o mesmo que testar 2<sup>n</sup> respostas.
+        Ao medir, você recebe <b>um</b> resultado, sorteado. O truque de um
+        algoritmo quântico não é o paralelismo — é arranjar as fases para que
+        os caminhos errados <b>se cancelem</b> e o certo sobre. Sem isso,
+        superposição é só uma moeda cara.
+      </p>
+    </div>
+    <figure class="panel">
+      <canvas id="hilbert-canvas" class="viz" height="220"></canvas>
+      <figcaption>Cada barra é uma dimensão do espaço de Hilbert — em escala real até a tela acabar.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================== 3. interferência -->
+<section id="interferencia" class="chapter">
+  <h2><span class="chap-n">3</span> Interferência: setas que se somam ou se engolem</h2>
+  <div class="cols">
+    <div>
+      <p>
+        Quando vários caminhos levam ao mesmo resultado, as setas deles se
+        somam <b>cabeça em cauda</b>. Se chegam apontando para o mesmo lado, a
+        resultante é enorme — <b>interferência construtiva</b>. Se cada uma
+        chega girada um pouquinho a mais que a anterior, o caminho se fecha num
+        círculo e a resultante morre — <b>destrutiva</b>.
+      </p>
+      <p>
+        Arraste o passo de fase e veja as 24 setas alinharem ou se engolirem.
+        É exatamente esta figura que decide, lá na frente, quais valores o
+        computador quântico deixa sobreviver na medição.
+      </p>
+      <div class="controls">
+        <label class="mono" for="int-slider">passo de fase</label>
+        <input id="int-slider" class="slider grow" type="range" min="0" max="200" value="0" aria-label="passo de fase entre setas">
+        <button id="int-c" class="btn small">construtiva</button>
+        <button id="int-d" class="btn small ghost">destrutiva</button>
+      </div>
+    </div>
+    <figure class="panel">
+      <canvas id="int-canvas" class="viz tall" height="280"></canvas>
+      <figcaption>24 setas somadas no plano complexo; a resultante em rosa.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================== 4. período -->
+<section id="periodo" class="chapter">
+  <h2><span class="chap-n">4</span> Fatorar vira achar um período</h2>
+  <div class="cols">
+    <div>
+      <p>
+        A ideia clássica por trás de Shor (e ela é 100% clássica): escolha um
+        número <span class="math">a</span> que não divida
+        <span class="math">N</span> e olhe a sequência
+        <span class="math">a¹, a², a³, … (mod N)</span>. Ela sempre entra num
+        ciclo — repete com um <b>período r</b>.
+      </p>
+      <p>
+        Sabendo <span class="math">r</span> (par, com
+        <span class="math">a<sup>r/2</sup> ≢ −1</span>), escreva
+        <span class="math">a<sup>r</sup> − 1 ≡ 0 (mod N)</span> e fatore a
+        diferença de quadrados:
+        <span class="math">(a<sup>r/2</sup>−1)(a<sup>r/2</sup>+1) ≡ 0 (mod N)</span>.
+        Os fatores de N se repartem entre os dois parênteses — e o
+        <b>mdc</b> de cada parêntese com N os entrega, em tempo de calculadora.
+      </p>
+      <p>
+        Todo o problema virou: <b>medir o período de uma função que se
+        repete</b>. E medir períodos é a especialidade da transformada de
+        Fourier — que tem uma versão quântica que roda sobre <i>todas</i> as
+        amplitudes de uma vez.
+      </p>
+    </div>
+    <figure class="panel">
+      <canvas id="per-canvas" class="viz" height="220"></canvas>
+      <figcaption>7<sup>x</sup> mod 15 = 1, 7, 4, 13, 1, 7, 4, 13, … — período r = 4.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ======================================================== 5. algoritmo -->
+<section id="algoritmo" class="chapter wide">
+  <h2><span class="chap-n">5</span> O algoritmo de Shor, ao vivo</h2>
+  <p class="chapter-lead">
+    Simulação <b>exata</b> — seu navegador calcula todas as amplitudes do
+    estado, as mesmas que um simulador porta a porta produziria. Escolha o
+    número e acompanhe as quatro etapas.
+  </p>
+
+  <div class="panel sim-controls">
+    <label for="sim-n">Número a fatorar</label>
+    <input id="sim-n" class="num" type="number" min="9" max="99" step="2" value="15" inputmode="numeric">
+    <div id="sim-presets" class="presets"></div>
+    <label for="sim-a">base <span class="math">a</span></label>
+    <select id="sim-a" class="num"></select>
+    <button id="sim-go" class="btn">preparar</button>
+    <span id="sim-err" class="err" role="alert"></span>
+  </div>
+
+  <div id="sim-body" class="hidden">
+    <p id="sim-regs" class="fine center"></p>
+    <div id="sim-circuit" class="circuit-box panel"></div>
+
+    <div class="steps" id="sim-steps" role="tablist">
+      <button class="step-btn" data-step="0" role="tab">① Superposição</button>
+      <button class="step-btn" data-step="1" role="tab">② Oráculo a<sup>x</sup> mod N</button>
+      <button class="step-btn" data-step="2" role="tab">③ QFT⁻¹ — interferência</button>
+      <button class="step-btn" data-step="3" role="tab">④ Medição → fatores</button>
+    </div>
+
+    <div class="panel step-panel">
+      <div id="sim-text"></div>
+
+      <div id="sim-charts">
+        <div id="sim-legend" class="legend"></div>
+        <canvas id="sim-canvas" class="viz tall" height="260"></canvas>
+        <details class="tbl-details"><summary>ver como tabela</summary><div id="sim-table"></div></details>
+      </div>
+
+      <div id="sim-phasor-box" class="hidden">
+        <div class="controls">
+          <label class="mono" for="sim-k">explorar k =&nbsp;<b id="sim-k-val">0</b></label>
+          <input id="sim-k" class="slider grow" type="range" min="0" max="255" value="0" aria-label="valor de k para inspecionar a interferência">
+        </div>
+        <div class="phasor-row">
+          <canvas id="sim-phasor" class="viz square" height="240"></canvas>
+          <p id="sim-phasor-text" class="fine"></p>
+        </div>
+      </div>
+
+      <div id="sim-measure-box" class="hidden">
+        <div class="controls">
+          <button id="sim-measure" class="btn">Medir o registrador de contagem</button>
+          <button id="sim-again" class="btn small ghost hidden">medir de novo</button>
+        </div>
+        <div id="sim-result"></div>
+      </div>
+
+      <div class="controls step-nav">
+        <button id="sim-prev" class="btn small ghost">← etapa anterior</button>
+        <button id="sim-next" class="btn small">próxima etapa →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================== 6. hardware -->
+<section id="hardware" class="chapter wide">
+  <h2><span class="chap-n">6</span> Agora no hardware de verdade</h2>
+  <p class="chapter-lead">
+    A simulação acima é o algoritmo em condições ideais. Abaixo, os
+    <b>histogramas crus</b> dos mesmos circuitos executados num processador
+    IBM Quantum da família Heron (156 qubits) — renovados automaticamente,
+    uma rodada por semana, pelo mesmo mecanismo que alimenta o
+    <a href="https://sorteio.vynstream.com">Sorteio Quântico</a>.
+  </p>
+  <p id="hw-status" class="fine center"></p>
+  <div id="hw-cards"></div>
+  <div class="panel prose">
+    <h3>Por que o circuito genérico afoga — e por que isso importa</h3>
+    <p>
+      Cada porta de 2 qubits do processador acerta ~99,7% das vezes. Parece
+      muito, mas fidelidades se multiplicam: com 83 portas
+      (0,997<sup>83</sup> ≈ 78%) os picos sobrevivem; com ~12&nbsp;400
+      (0,997<sup>12400</sup> ≈ 10<sup>−17</sup>) o que sai é uniforme — ruído
+      puro, indistinguível de um dado de 16 faces.
+    </p>
+    <p>
+      E aqui mora uma lição de honestidade científica: quase toda
+      "fatoração quântica" já demonstrada usou circuitos <b>compilados</b>,
+      encolhidos com conhecimento prévio da resposta — como os dois primeiros
+      acima. O circuito <b>genérico</b>, o único que contaria numa fatoração
+      cega, ainda não sobrevive ao ruído nem para N=15. É por isso que a
+      fronteira real da área não é "quantos qubits", e sim <b>correção de
+      erros</b>: transformar milhares de qubits físicos ruidosos em alguns
+      qubits lógicos quase perfeitos.
+    </p>
+  </div>
+</section>
+
+<!-- ======================================================== 7. cripto -->
+<section id="cripto" class="chapter">
+  <h2><span class="chap-n">7</span> "Então o RSA já era?" — ainda não. Mas o relógio anda.</h2>
+  <div class="prose">
+    <p>
+      Uma chave RSA-2048 tem 617 dígitos. Fatorá-la com Shor exige circuitos
+      com <b>bilhões de portas</b> executados sem perder a coerência — as
+      estimativas mais citadas falam em <b>~20 milhões de qubits físicos</b>
+      ruidosos rodando por ~8 horas, ou alguns <b>milhares de qubits
+      lógicos</b> com correção de erros madura. O processador desta página tem
+      156 qubits físicos e, como você viu acima, tropeça no circuito genérico
+      para N=15.
+    </p>
+    <p>
+      Mas a distância é de engenharia, não de princípio — nada na física
+      proíbe. Por isso a criptografia já se mexeu: o NIST padronizou em 2024
+      os primeiros algoritmos <b>pós-quânticos</b> (ML-KEM, ML-DSA), e a
+      migração começou. O risco real de hoje chama-se
+      <i>harvest&nbsp;now,&nbsp;decrypt&nbsp;later</i>: guardar tráfego
+      cifrado agora para abrir quando o hardware chegar lá.
+    </p>
+  </div>
+</section>
+
+<!-- ======================================================== método -->
+<section id="metodo" class="chapter">
+  <h2><span class="chap-n">§</span> Metodologia</h2>
+  <div class="prose fine">
+    <p>
+      <b>Simulação no navegador.</b> O estado após o oráculo é
+      (1/√M)&nbsp;Σ|x⟩|a<sup>x</sup> mod N⟩; os valores do registrador de
+      trabalho o partem em r pentes aritméticos, e a QFT⁻¹ de cada pente é
+      uma FFT de tamanho M. O site calcula as amplitudes <b>exatas</b> assim,
+      em O(r·M·log M) — sem aproximações e sem fingir: é a mesma álgebra do
+      circuito, pelo atalho que a estrutura dele permite.
+    </p>
+    <p>
+      <b>Circuitos no hardware.</b> Construídos e validados com Qiskit contra a
+      distribuição teórica, transpilados offline para as portas nativas do
+      Heron (cz, rz, sx, x) e submetidos por um Cloudflare Worker via API REST
+      da IBM Quantum — plano Open, 10 minutos de QPU por mês, compartilhados
+      com o Sorteio Quântico. O circuito genérico segue S.&nbsp;Beauregard,
+      <i>Circuit for Shor's algorithm using 2n+3 qubits</i>
+      (quant-ph/0205095); o experimento de referência sobre fatorar 15, 21 e
+      35 em hardware IBM é Amico, Saleem &amp; Kumph (arXiv:1903.00768); a
+      crítica clássica aos circuitos compilados é Smolin, Smith &amp; Vargo,
+      <i>Oversimplifying quantum factoring</i> (arXiv:1301.7007).
+    </p>
+    <p>
+      Nenhum cookie, nenhum rastreador. Os dados de hardware exibidos são
+      contagens brutas de medição, sem pós-seleção.
+    </p>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <p>⚛ Fatoração Quântica · um experimento educacional de Alvaro Antelo ·
+     irmão do <a href="https://sorteio.vynstream.com">Sorteio Quântico</a></p>
+</footer>
+
+<div id="tooltip" class="tooltip hidden" role="status"></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

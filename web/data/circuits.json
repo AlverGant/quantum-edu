@@ -1,0 +1,96 @@
+[
+ {
+  "id": "shor15_compilado",
+  "title": "N=15, circuito compacto",
+  "N": 15,
+  "a": 7,
+  "r": 4,
+  "kind": "compilado",
+  "note": "Multiplicação modular por rotação de bits — usa o fato de 15 ser 2^4−1.",
+  "counting_qubits": 3,
+  "logical_qubits": 7,
+  "shots": 4096,
+  "ideal": {
+   "0": 0.25,
+   "2": 0.25,
+   "4": 0.25,
+   "6": 0.25
+  },
+  "backends": {
+   "ibm_marrakesh": {
+    "depth": 224,
+    "twoq_gates": 83,
+    "total_gates": 338
+   },
+   "ibm_fez": {
+    "depth": 223,
+    "twoq_gates": 83,
+    "total_gates": 338
+   }
+  }
+ },
+ {
+  "id": "shor21_orbita",
+  "title": "N=21, órbita comprimida",
+  "N": 21,
+  "a": 4,
+  "r": 3,
+  "kind": "compilado",
+  "note": "Registrador de trabalho reduzido à órbita {1,4,16} — 2 qubits. r=3 não divide 8: frações continuadas obrigatórias.",
+  "counting_qubits": 3,
+  "logical_qubits": 5,
+  "shots": 4096,
+  "ideal": {
+   "0": 0.34375,
+   "1": 0.014515,
+   "2": 0.0625,
+   "3": 0.235485,
+   "4": 0.03125,
+   "5": 0.235485,
+   "6": 0.0625,
+   "7": 0.014515
+  },
+  "backends": {
+   "ibm_marrakesh": {
+    "depth": 140,
+    "twoq_gates": 39,
+    "total_gates": 226
+   },
+   "ibm_fez": {
+    "depth": 141,
+    "twoq_gates": 39,
+    "total_gates": 227
+   }
+  }
+ },
+ {
+  "id": "shor15_generico",
+  "title": "N=15, circuito genérico (Beauregard)",
+  "N": 15,
+  "a": 7,
+  "r": 4,
+  "kind": "generico",
+  "note": "Mesma fatoração, zero atalhos: somadores de Fourier, adição modular, des-cômputo. É o que uma fatoração cega exige.",
+  "counting_qubits": 4,
+  "logical_qubits": 14,
+  "shots": 2048,
+  "ideal": {
+   "0": 0.25,
+   "4": 0.25,
+   "8": 0.25,
+   "12": 0.25
+  },
+  "backends": {
+   "ibm_marrakesh": {
+    "depth": 26637,
+    "twoq_gates": 12428,
+    "total_gates": 52827
+   },
+   "ibm_fez": {
+    "depth": 26653,
+    "twoq_gates": 12428,
+    "total_gates": 52870
+   }
+  }
+ }
+]
